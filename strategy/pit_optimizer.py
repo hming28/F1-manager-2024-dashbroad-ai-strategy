@@ -21,6 +21,7 @@ from core.models import (
     SafetyCarState,
 )
 from strategy.tyre_model import TyreModel, TyreWearPrediction
+from strategy.monte_carlo import MonteCarloSimulator, SimulationReport, MonteCarloResult
 
 
 @dataclass
@@ -43,15 +44,21 @@ class StrategyPlan:
     total_expected_gain_ms: int
     risk_level: str                # "LOW" / "MEDIUM" / "HIGH"
     notes: list[str]
+    mc_report: Optional[SimulationReport] = None
 
 
 class PitOptimizer:
     """
     Computes optimal pit stop windows considering all factors.
+    Integrates Monte Carlo stochastic simulation for probabilistic strategy scoring.
     """
     
-    def __init__(self, tyre_model: TyreModel):
+    def __init__(self, tyre_model: TyreModel, mc_enabled: bool = True,
+                 mc_simulations: int = 1000):
         self.tyre_model = tyre_model
+        self.mc_enabled = mc_enabled
+        self.mc_simulations = mc_simulations
+        self.mc_simulator = MonteCarloSimulator(tyre_model=tyre_model, default_simulations=mc_simulations)
     
     def optimize(self, snapshot: RaceSnapshot, my_car: CarRaceState,
                  track: Track) -> StrategyPlan:
@@ -133,6 +140,48 @@ class PitOptimizer:
         # Sort by total expected gain
         strategies.sort(key=lambda s: s[1].total_expected_gain_ms, reverse=True)
         best_name, best_plan = strategies[0]
+
+        # ── Monte Carlo Stochastic Evaluation ────────────────────────────────
+        if self.mc_enabled and remaining_laps > 2:
+            top_candidates = strategies[:5]
+            # Ensure no_stop is evaluated if present
+            no_stop_entry = next((s for s in strategies if s[0] == "no_stop"), None)
+            if no_stop_entry and no_stop_entry not in top_candidates:
+                top_candidates.append(no_stop_entry)
+
+            mc_input_candidates = []
+            cand_plan_map = {}
+            for sname, splan in top_candidates:
+                if splan.stops:
+                    st = splan.stops[0]
+                    c_tuple = (f"{sname} (L{st.lap} {st.compound.short})", st.lap, st.compound)
+                else:
+                    c_tuple = ("Stay Out", 0, TyreCompound.MEDIUM)
+                mc_input_candidates.append(c_tuple)
+                cand_plan_map[c_tuple[0]] = splan
+
+            if mc_input_candidates:
+                try:
+                    mc_report = self.mc_simulator.simulate(
+                        snapshot=snapshot,
+                        my_car=my_car,
+                        track=track,
+                        candidate_stops=mc_input_candidates,
+                        num_simulations=self.mc_simulations,
+                    )
+                    if mc_report and mc_report.best_result:
+                        best_mc = mc_report.best_result
+                        if best_mc.strategy_name in cand_plan_map:
+                            best_plan = cand_plan_map[best_mc.strategy_name]
+                        best_plan.mc_report = mc_report
+                        best_plan.notes.append(
+                            f"Monte Carlo: Exp Pts {best_mc.expected_points:.1f} | "
+                            f"Pod {best_mc.podium_probability:.0%} | "
+                            f"Win {best_mc.win_probability:.0%} | "
+                            f"Traffic Risk {best_mc.traffic_risk:.0%}"
+                        )
+                except Exception as ex:
+                    logger.warning("Monte Carlo simulation encountered error: %s", ex)
         
         # Add notes about alternatives
         notes = []

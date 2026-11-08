@@ -87,7 +87,7 @@ def mock_20_cars_telemetry():
             "s2_state": 0,  # Open
             "s3_time": 0.0,
             "s3_state": 0,
-            "tyre_compound": 0 if i < 10 else 1,  # Soft / Medium
+            "tyre_compound": 3 if i < 10 else 2,  # Soft (3) / Medium (2)
             "tyre_wear": 10 + i,
             "tyre_temp": 95,
             "ers_charge": 80 - i,
@@ -523,7 +523,7 @@ class TestLiveTimingEdgeCases:
                 "car_index": 0,
                 "position": 1,
                 "lap_count": 30,
-                "tyre_compound": 0,  # Soft
+                "tyre_compound": 3,  # Soft
                 "tyre_wear": 85,     # 85% worn out -> 0.15 condition
                 "is_in_pit": True,
             }]
@@ -571,3 +571,38 @@ class TestLiveTimingEdgeCases:
         assert "ConsoleEnabled = 0" in updated_content
         assert "GuiConsoleEnabled = 0" in updated_content
         assert (tmp_path / "UE4SS-settings.ini.bak").exists()
+
+    def test_live_tyre_compound_mapping(self):
+        from core.live_timing_reader import parse_live_tyre_compound, clean_driver_code, clean_driver_name
+        from core.db_accessor import parse_db_tyre_compound
+
+        # Verify live telemetry mappings (fixes user-reported bugs: intermediate is soft, medium is hard, hard is medium)
+        assert parse_live_tyre_compound(1) == TyreCompound.HARD
+        assert parse_live_tyre_compound(2) == TyreCompound.MEDIUM
+        assert parse_live_tyre_compound(3) == TyreCompound.SOFT
+        assert parse_live_tyre_compound(0) == TyreCompound.INTER
+        assert parse_live_tyre_compound(4) == TyreCompound.INTER
+        assert parse_live_tyre_compound(5) == TyreCompound.WET
+        assert parse_live_tyre_compound(6) == TyreCompound.INTER
+        assert parse_live_tyre_compound(7) == TyreCompound.WET
+        assert parse_live_tyre_compound(0, tyre_type=6) == TyreCompound.INTER
+        assert parse_live_tyre_compound(0, tyre_type=7) == TyreCompound.WET
+
+        # String fallbacks
+        assert parse_live_tyre_compound("HARD") == TyreCompound.HARD
+        assert parse_live_tyre_compound("MEDIUM") == TyreCompound.MEDIUM
+        assert parse_live_tyre_compound("SOFT") == TyreCompound.SOFT
+        assert parse_live_tyre_compound("INTER") == TyreCompound.INTER
+        assert parse_live_tyre_compound("WET") == TyreCompound.WET
+
+        # Database WeekendTyreType mapping
+        assert parse_db_tyre_compound(0) == TyreCompound.HARD
+        assert parse_db_tyre_compound(1) == TyreCompound.MEDIUM
+        assert parse_db_tyre_compound(2) == TyreCompound.SOFT
+        assert parse_db_tyre_compound(3) == TyreCompound.INTER
+        assert parse_db_tyre_compound(4) == TyreCompound.WET
+
+        # Driver code and name tag cleaning
+        assert clean_driver_code("[DriverCode_Alb]") == "ALB"
+        assert clean_driver_code("[DriverCode_Lec]") == "LEC"
+        assert clean_driver_name("[StaffName_Forename_Male_Alexander] [StaffName_Surname_Albon]") == "Alexander Albon"

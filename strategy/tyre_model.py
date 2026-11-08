@@ -19,6 +19,7 @@ from typing import Optional
 from core.models import (
     CarRaceState, TyreCompound, Track, WeatherState_Data, TrackType
 )
+from strategy.fastf1_calibrator import FastF1Calibrator
 
 
 # ── Constants ────────────────────────────────────────────────────────────────
@@ -78,42 +79,60 @@ class CompoundAnalysis:
 class TyreModel:
     """
     Predicts tyre degradation and optimal pit windows.
+    Integrates FastF1 official telemetry calibrations with game physics.
     """
     
-    def __init__(self):
+    def __init__(self, calibrator: Optional[FastF1Calibrator] = None):
         # Track-specific multipliers (loaded from historical data if available)
         self._track_multiplier: float = 1.0
         self._weather_multiplier: float = 1.0
+        self.calibrator = calibrator if calibrator is not None else FastF1Calibrator()
+
+    def get_calibrated_profile(self, track: Track) -> Optional[dict]:
+        """Retrieve real-world FastF1 calibrated profile for this track if available."""
+        if not track:
+            return None
+        return self.calibrator.find_track(track.name) or self.calibrator.find_track(track.track_id)
+
+    def is_track_calibrated(self, track: Track) -> bool:
+        """Return True if the track has FastF1 telemetry calibrations."""
+        return self.get_calibrated_profile(track) is not None
     
     def analyze_compound(self, compound: TyreCompound, track: Track,
                          weather: Optional[WeatherState_Data] = None) -> CompoundAnalysis:
         """
         Analyze how a tyre compound will perform on a given track.
+        Uses FastF1 calibrated baseline pace and degradation when available.
         """
-        base_deg = BASE_DEGRADATION.get(compound, 0.020)
+        cal_profile = self.get_calibrated_profile(track)
+        compound_name = compound.name  # "SOFT", "MEDIUM", "HARD", "INTER", "WET"
         
-        # Track type adjustment
-        track_mult = self._track_type_multiplier(track.type_of_track, compound)
-        
-        # Track length affects total wear (longer track = more energy per lap)
-        length_mult = 1.0 + (track.track_length - 5.0) * 0.03  # normalized to 5km
+        pace_delta: Optional[int] = None
+        if cal_profile and compound in (TyreCompound.SOFT, TyreCompound.MEDIUM, TyreCompound.HARD):
+            cal_deg_map = cal_profile.get("compound_deg_rate", {})
+            base_deg = cal_deg_map.get(compound_name, BASE_DEGRADATION.get(compound, 0.020))
+            pace_delta = cal_profile.get("compound_pace_delta_ms", {}).get(compound_name)
+            # Track length adjustment
+            length_mult = 1.0 + (track.track_length - 5.0) * 0.02
+        else:
+            base_deg = BASE_DEGRADATION.get(compound, 0.020)
+            track_mult = self._track_type_multiplier(track.type_of_track, compound)
+            length_mult = 1.0 + (track.track_length - 5.0) * 0.03
+            base_deg = base_deg * track_mult
         
         # Weather adjustment
         weather_mult = 1.0
         if weather:
             if compound in (TyreCompound.INTER, TyreCompound.WET):
-                # Rain tyres perform better in wet
                 weather_mult = max(0.5, 1.0 - weather.water_on_track * 0.5)
             else:
-                # Dry tyres degrade faster in wet
                 weather_mult = 1.0 + weather.water_on_track * 2.0
-            # Temperature effect
             if weather.track_temp > 45:
                 weather_mult *= 1.15
             elif weather.track_temp < 25:
                 weather_mult *= 0.90
         
-        effective_deg = base_deg * track_mult * length_mult * weather_mult
+        effective_deg = base_deg * length_mult * weather_mult
         
         # Expected life
         if effective_deg > 0:
@@ -122,15 +141,15 @@ class TyreModel:
             expected_life = 999
         
         # Pace delta vs medium
-        medium_deg = BASE_DEGRADATION[TyreCompound.MEDIUM]
-        if compound == TyreCompound.SOFT:
-            pace_delta = -800   # faster by 0.8s
-        elif compound == TyreCompound.HARD:
-            pace_delta = +600   # slower by 0.6s
-        elif compound == TyreCompound.MEDIUM:
-            pace_delta = 0
-        else:
-            pace_delta = +400   # inters/wets slower on dry
+        if pace_delta is None:
+            if compound == TyreCompound.SOFT:
+                pace_delta = -800   # faster by 0.8s
+            elif compound == TyreCompound.HARD:
+                pace_delta = +600   # slower by 0.6s
+            elif compound == TyreCompound.MEDIUM:
+                pace_delta = 0
+            else:
+                pace_delta = +400   # inters/wets slower on dry
         
         return CompoundAnalysis(
             compound=compound,

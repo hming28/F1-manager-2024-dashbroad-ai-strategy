@@ -14,7 +14,15 @@ from typing import Optional
 # ── Enums ────────────────────────────────────────────────────────────────────
 
 class TyreCompound(IntEnum):
-    """Maps to Races_Strategies.TyreSet / Save_CarTyreAllocation.WeekendTyreType"""
+    """
+    Standardized domain enum for F1 Tyre Compounds.
+    
+    0 = SOFT   (Red, 'S')
+    1 = MEDIUM (Yellow, 'M')
+    2 = HARD   (White, 'H')
+    3 = INTER  (Green, 'I')
+    4 = WET    (Blue, 'W')
+    """
     SOFT = 0
     MEDIUM = 1
     HARD = 2
@@ -23,11 +31,23 @@ class TyreCompound(IntEnum):
 
     @property
     def color(self) -> str:
-        return {0: "red", 1: "yellow", 2: "white", 3: "green", 4: "blue"}[self.value]
+        return {
+            self.SOFT: "red",
+            self.MEDIUM: "yellow",
+            self.HARD: "white",
+            self.INTER: "green",
+            self.WET: "blue",
+        }.get(self, "white")
 
     @property
     def short(self) -> str:
-        return {0: "S", 1: "M", 2: "H", 3: "I", 4: "W"}[self.value]
+        return {
+            self.SOFT: "S",
+            self.MEDIUM: "M",
+            self.HARD: "H",
+            self.INTER: "I",
+            self.WET: "W",
+        }.get(self, "?")
 
 
 class WeatherState(IntEnum):

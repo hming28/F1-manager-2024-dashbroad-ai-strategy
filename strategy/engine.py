@@ -158,13 +158,21 @@ class StrategyEngine:
         pit_plan = self.pit_optimizer.optimize(snapshot, primary_car, self.track)
         if pit_plan and pit_plan.stops:
             top_stop = max(pit_plan.stops, key=lambda s: s.expected_time_gain_ms)
-            if top_stop.expected_time_gain_ms > 1000:  # only if meaningful gain
+            has_mc = pit_plan.mc_report is not None and pit_plan.mc_report.best_result is not None
+            if top_stop.expected_time_gain_ms > 1000 or (has_mc and pit_plan.mc_report.best_result.expected_points > 0):
                 priority = 6 if top_stop.priority == "RECOMMENDED" else 4
+                mc_title_extra = ""
+                mc_detail_extra = ""
+                if has_mc:
+                    mc_b = pit_plan.mc_report.best_result
+                    mc_title_extra = f" [Exp Pts: {mc_b.expected_points:.1f} | Pod: {mc_b.podium_probability:.0%}]"
+                    mc_detail_extra = f" | Traffic Risk: {mc_b.traffic_risk:.0%} | Est: P{mc_b.p90_position}-P{mc_b.p10_position}"
+
                 recommendations.append(StrategyRecommendation(
                     priority=priority,
                     category="PIT",
-                    title=f"📦 Pit window: lap {top_stop.lap} for {top_stop.compound.short}",
-                    detail=top_stop.reason,
+                    title=f"📦 Pit window: lap {top_stop.lap} for {top_stop.compound.short}{mc_title_extra}",
+                    detail=f"{top_stop.reason}{mc_detail_extra}",
                     action=f"Pit on lap {top_stop.lap} for {top_stop.compound.name} compound",
                     pit_plan=pit_plan,
                 ))

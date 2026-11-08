@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "f1-manager-2024-strategy-ai"
-version = "1.0.0"
+version = "2.0.0"
 description = "Real-time AI strategy assistant & live timing telemetry for F1 Manager 2024"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,6 +24,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
+]
+calibration = [
+    "fastf1>=3.4.0",
 ]
 
 [project.scripts]

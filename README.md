@@ -2,7 +2,8 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-32%20passed-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-47%20passed-brightgreen.svg)](tests/)
+[![Release](https://img.shields.io/badge/release-v2.0.0-blue.svg)](https://github.com/hming28/F1-manager-2024-dashbroad-ai-strategy/releases)
 
 Real-time AI strategy assistant and broadcast-grade **Live Timing Tower** for **F1 Manager 2024**.
 Monitors in-race 3D telemetry via UE4SS (250ms refresh rate) with official sector color highlights (purple/green/yellow), lap-by-lap history, tyre degradation modeling, and pit stop optimization. Seamlessly falls back to `.sav` SQLite monitoring when managing contracts, R&D, and facilities in the team HQ.
@@ -23,15 +24,17 @@ Monitors in-race 3D telemetry via UE4SS (250ms refresh rate) with official secto
 - **🔄 Dual-Mode Auto Detection**:
   - Automatically streams Live Timing during active 3D sessions (Practice, Qualifying, Race).
   - Automatically falls back to `.sav` SQLite parsing when navigating team HQ menus.
-- **🧠 AI Strategy & Telemetry Engine**:
-  - **Tyre degradation model**: Predicts cliff points and optimal stint lengths per compound.
+- **🧠 AI Strategy & Telemetry Engine (v2.0)**:
+  - **Monte Carlo Race Simulator**: Runs 1,000+ stochastic iterations near pit windows modeling safety car hazard, dirty air / traffic blocking, opponent reactive undercuts, and pace/tyre noise to compute Expected Points $\mathbb{E}[\text{Points}]$ and probability distributions ($P(Win)$, $P(Podium)$, $P(Top 10)$).
+  - **FastF1 Real Telemetry Calibration**: Pre-calibrated high-fidelity dataset for all 24 championship circuits (baseline race lap times, compound degradation slopes, and pace deltas) with live `FastF1Calibrator` CLI tools.
+  - **Tyre degradation model**: Predicts cliff points and optimal stint lengths per compound, integrating real circuit degradation parameters.
   - **Pit stop optimizer**: Dynamic evaluation of 1-stop vs 2-stop, undercut threats, and overcut opportunities.
   - **Safety Car / VSC response**: Instant calculation of delta times for free pit stop opportunities.
   - **Weather radar & rain transitions**: Track wetness tracking and compound crossover alerts.
   - **Competitor intelligence**: Tracks pit windows and pace deltas for all 19 opponents.
 - **🖥️ Broadcast-Grade Terminal Dashboard (Rich UI)**:
-  - Adaptive 120-column full-width Timing Tower.
-  - Dedicated cards for [My Team Status], [Strategy Recommendations], [Weather], and [Race Intel].
+  - Adaptive 120-column full-width Timing Tower with `[FastF1]` track calibration indicators.
+  - Dedicated cards for [My Team Status], [Strategy Recommendations & Monte Carlo Probabilities], [Weather], and [Race Intel].
   - Graceful `⏸️ LIVE (PAUSED)` state persistence when pausing the game.
 
 ---
@@ -74,8 +77,8 @@ python install_mod.py
 *For players who only want the game mod to export live telemetry without setting up Python.*
 
 1. **Download the pre-packaged Mod**:
-   - Go to [v1.0.0 Release](https://github.com/hming28/F1-manager-2024-dashbroad-ai-strategy/releases/tag/v1.0.0).
-   - Under **Assets**, download `F1Manager24-LiveTimingMod-v1.0.0.zip`.
+   - Go to [v2.0.0 Release](https://github.com/hming28/F1-manager-2024-dashbroad-ai-strategy/releases/tag/v2.0.0).
+   - Under **Assets**, download `F1Manager24-LiveTimingMod-v2.0.0.zip`.
 
 2. **Install UE4SS Framework (Prerequisite)**:
    - Download the UE4SS release from [RE-UE4SS Releases](https://github.com/UE4SS-RE/RE-UE4SS/releases) (e.g. `UE4SS_v3.0.1.zip`).
@@ -83,7 +86,7 @@ python install_mod.py
      `<Game_Directory>\F1Manager24\Binaries\Win64\`
 
 3. **Install the Mod**:
-   - Extract `F1Manager24-LiveTimingMod-v1.0.0.zip` directly into the same directory:
+   - Extract `F1Manager24-LiveTimingMod-v2.0.0.zip` directly into the same directory:
      `<Game_Directory>\F1Manager24\Binaries\Win64\`
    - Done! During any race, the mod will automatically generate live telemetry at `ue4ss\Mods\LiveTimingMod\live_timing.json`.
 
@@ -190,18 +193,24 @@ f1-manager-2024-strategy-ai/
 │   ├── file_watcher.py        # Save directory monitoring
 │   ├── models.py              # Data structures & enums
 │   └── savefile_codec.py      # Binary save file decoder
+├── data/                      # Calibrated circuit benchmarks
+│   └── calibrated_tracks.json # FastF1 telemetry baseline for all 24 circuits
 ├── strategy/                  # Strategy decision engine
 │   ├── engine.py              # Main strategy coordinator
-│   ├── tyre_model.py          # Compound degradation curves
-│   ├── pit_optimizer.py       # Pit window optimizer
+│   ├── monte_carlo.py         # Monte Carlo 1,000+ stochastic race simulator
+│   ├── fastf1_calibrator.py   # FastF1 telemetry regression & calibration CLI
+│   ├── tyre_model.py          # Compound degradation curves & real track delta
+│   ├── pit_optimizer.py       # Pit window optimizer & probabilistic evaluation
 │   ├── safety_car.py          # Safety car / VSC response
 │   ├── weather_strategy.py    # Rain & track crossover analyzer
 │   └── race_intel.py          # Competitor threat tracker
 ├── display/                   # Terminal user interface
 │   └── dashboard.py           # Rich F1 TV-style Timing Tower
-└── tests/                     # Test suite (32 unit tests)
+└── tests/                     # Test suite (46 unit tests)
     ├── test_live_timing.py    # Live telemetry & edge case tests
-    └── test_strategy.py       # Strategy engine & tyre model tests
+    ├── test_strategy.py       # Strategy engine & tyre model tests
+    ├── test_monte_carlo.py    # Monte Carlo simulation & perturbation tests
+    └── test_fastf1_calibrator.py # FastF1 calibration & schema tests
 ```
 
 ---
@@ -212,7 +221,7 @@ Run all automated unit tests:
 ```bash
 pytest tests/ -v
 ```
-All 32 test cases cover multi-car telemetry, pause retention, purple sector preservation, high-speed lap jumps, and terminal layout safety.
+All 46 test cases cover multi-car telemetry, pause retention, purple sector preservation, high-speed lap jumps, terminal layout safety, Monte Carlo stochastic rollouts, and FastF1 telemetry calibration.
 
 ---
 

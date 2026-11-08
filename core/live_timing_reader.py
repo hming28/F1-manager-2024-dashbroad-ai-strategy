@@ -123,6 +123,79 @@ def resolve_team_id(team_str: str, default: int = 0) -> int:
         return default
 
 
+# Live telemetry compound mapping (UE4SS LiveTimingMod / F1 Manager 2024)
+# In-game telemetry values:
+# 1 = HARD (White)
+# 2 = MEDIUM (Yellow)
+# 3 = SOFT (Red)
+# 0, 4, 6 = INTER (Green)
+# 5, 7 = WET (Blue)
+LIVE_COMPOUND_MAP: dict[int, TyreCompound] = {
+    1: TyreCompound.HARD,
+    2: TyreCompound.MEDIUM,
+    3: TyreCompound.SOFT,
+    0: TyreCompound.INTER,
+    4: TyreCompound.INTER,
+    5: TyreCompound.WET,
+    6: TyreCompound.INTER,
+    7: TyreCompound.WET,
+}
+
+
+def parse_live_tyre_compound(val: Any, tyre_type: Optional[int] = None) -> TyreCompound:
+    """
+    Map live timing telemetry compound values to TyreCompound enum.
+    
+    Fixes compound mapping discrepancies:
+      - Game 1 (HARD) -> TyreCompound.HARD
+      - Game 2 (MEDIUM) -> TyreCompound.MEDIUM
+      - Game 3 (SOFT) -> TyreCompound.SOFT
+      - Game 0/4/6 (INTER) -> TyreCompound.INTER
+      - Game 5/7 (WET) -> TyreCompound.WET
+    """
+    if isinstance(val, TyreCompound):
+        return val
+    if isinstance(val, str):
+        v = val.strip().upper()
+        if "SOFT" in v or v == "S":
+            return TyreCompound.SOFT
+        elif "MED" in v or v == "M":
+            return TyreCompound.MEDIUM
+        elif "HARD" in v or v == "H":
+            return TyreCompound.HARD
+        elif "INT" in v or v == "I":
+            return TyreCompound.INTER
+        elif "WET" in v or v == "W":
+            return TyreCompound.WET
+    try:
+        iv = int(val)
+        if iv == 0 and tyre_type is not None and tyre_type >= 0:
+            if tyre_type == 7:
+                return TyreCompound.WET
+            elif tyre_type == 6:
+                return TyreCompound.INTER
+        return LIVE_COMPOUND_MAP.get(iv, TyreCompound.INTER if iv == 0 else TyreCompound.SOFT)
+    except (ValueError, TypeError):
+        return TyreCompound.SOFT
+
+
+def clean_driver_code(code: str, fallback_index: int = 0) -> str:
+    """Strip UE localization tags from driver code: [DriverCode_Alb] -> ALB."""
+    if not code:
+        return f"CAR_{fallback_index}"
+    c = str(code).replace("[DriverCode_", "").replace("]", "").strip()
+    return c.upper() if c else f"CAR_{fallback_index}"
+
+
+def clean_driver_name(name: str) -> str:
+    """Strip UE localization tags from driver name: [StaffName_Forename_Male_Alexander] [StaffName_Surname_Albon] -> Alexander Albon."""
+    if not name:
+        return ""
+    import re
+    cleaned = re.sub(r"\[StaffName_(?:Forename_Male_|Forename_Female_|Forename_|Surname_)?([A-Za-z0-9_]+)\]", r"\1", str(name))
+    return cleaned.strip()
+
+
 class LapHistoryAccumulator:
     """
     Maintains a 100% loss-free historical record of every lap completed by all 20 cars.
@@ -179,7 +252,7 @@ class LapHistoryAccumulator:
         for car in cars_data:
             idx = car.get("car_index", 0)
             lap_count = car.get("lap_count", 0)
-            driver_code = car.get("driver_code", f"CAR_{idx}")
+            driver_code = clean_driver_code(car.get("driver_code", f"CAR_{idx}"), idx)
             last_lap_time = car.get("last_lap_time", 0.0)
             best_lap_time = car.get("best_lap_time", 0.0)
             s1_time = car.get("s1_time", 0.0)
@@ -189,12 +262,9 @@ class LapHistoryAccumulator:
             s2_state_val = car.get("s2_state", 0)
             s3_state_val = car.get("s3_state", 0)
             tyre_compound_val = car.get("tyre_compound", 0)
+            tyre_type_val = car.get("tyre_type", -1)
             tyre_wear = car.get("tyre_wear", 0)
-
-            try:
-                compound = TyreCompound(tyre_compound_val)
-            except (ValueError, KeyError):
-                compound = TyreCompound.SOFT
+            compound = parse_live_tyre_compound(tyre_compound_val, tyre_type_val)
 
             try:
                 s1_state_enum = SectorState(s1_state_val)
@@ -400,8 +470,8 @@ class LapHistoryAccumulator:
                 prev_gap = prev_car.get("gap_to_leader", 0.0)
                 interval = max(0.0, round(gap_lead - prev_gap, 3))
 
-            driver_name = car.get("driver_name", "")
-            driver_code = car.get("driver_code", f"CAR_{idx}")
+            driver_name = clean_driver_name(car.get("driver_name", ""))
+            driver_code = clean_driver_code(car.get("driver_code", f"CAR_{idx}"), idx)
             driver_number = car.get("driver_number", 0)
             team_name = car.get("team_name", "")
             team_id = resolve_team_id(team_name, default=(idx // 2) + 1)
@@ -452,10 +522,8 @@ class LapHistoryAccumulator:
                     s3_state = SectorState.PERSONAL_BEST
 
             tyre_compound_val = car.get("tyre_compound", 0)
-            try:
-                compound = TyreCompound(tyre_compound_val)
-            except (ValueError, KeyError):
-                compound = TyreCompound.SOFT
+            tyre_type_val = car.get("tyre_type", -1)
+            compound = parse_live_tyre_compound(tyre_compound_val, tyre_type_val)
 
             tyre_wear = car.get("tyre_wear", 0)
             tyre_cond = max(0.0, min(1.0, 1.0 - (tyre_wear / 100.0)))

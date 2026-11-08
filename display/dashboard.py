@@ -22,6 +22,7 @@ from rich.align import Align
 from core.models import RaceSnapshot, CarRaceState, TyreCompound, SectorState
 from core.db_accessor import format_lap_time, format_gap
 from strategy.engine import EngineState, StrategyRecommendation
+from strategy.fastf1_calibrator import FastF1Calibrator
 
 
 console = Console()
@@ -122,6 +123,7 @@ class Dashboard:
         self.console = console or Console()
         self._prev_positions: dict[int, int] = {}
         self._last_update: float = 0
+        self._calibrator = FastF1Calibrator()
     
     def render(self, snapshot: RaceSnapshot, state: EngineState,
                live: Optional[Live] = None):
@@ -220,6 +222,14 @@ class Dashboard:
             sc_text = "  [bold red]🚨 SAFETY CAR[/bold red]"
         elif snapshot.is_vsc:
             sc_text = "  [bold yellow]⚠️ VSC[/bold yellow]"
+
+        track_badge = ""
+        if snapshot.track:
+            t_name = snapshot.track.name
+            if self._calibrator.find_track(t_name):
+                track_badge = f"  [bold green]🏁 {t_name} [FastF1][/bold green]"
+            else:
+                track_badge = f"  [cyan]🏁 {t_name}[/cyan]"
         
         top_rec = state.top_recommendation
         alert = ""
@@ -228,7 +238,7 @@ class Dashboard:
         
         return Panel(
             f"  🏎️  F1 MANAGER 2024 — AI STRATEGY ENGINE  |  {mode_badge}  |  "
-            f"{progress} ({pct:.0f}%){fl_badge}{sc_text}{alert}",
+            f"{progress} ({pct:.0f}%){track_badge}{fl_badge}{sc_text}{alert}",
             style="bold white on dark_blue",
         )
     
@@ -420,7 +430,7 @@ class Dashboard:
         recs = sorted(state.recommendations, key=lambda r: r.priority, reverse=True)
         
         lines = []
-        for rec in recs[:5]:  # top 5
+        for rec in recs[:4]:  # top 4
             color = priority_color(rec.priority)
             lines.append(
                 f"[{color}][P{rec.priority}] {rec.title}[/{color}]"
@@ -428,6 +438,25 @@ class Dashboard:
             lines.append(f"  [dim]{rec.detail}[/dim]")
             lines.append(f"  [bold]{rec.action}[/bold]")
             lines.append("")
+
+        # Monte Carlo Simulation details if available
+        if state.pit_strategy and getattr(state.pit_strategy, "mc_report", None):
+            mc_rep = state.pit_strategy.mc_report
+            if mc_rep and mc_rep.all_results:
+                lines.append("[bold cyan]🎲 Monte Carlo Simulations (1,000 runs):[/bold cyan]")
+                for cand in mc_rep.all_results[:3]:
+                    is_best = (cand == mc_rep.best_result)
+                    star = "[bold green]★[/bold green]" if is_best else " •"
+                    cand_name = cand.strategy_name[:20]
+                    lines.append(
+                        f" {star} {cand_name:<20} "
+                        f"ExpPts: [bold yellow]{cand.expected_points:>4.1f}[/bold yellow] | "
+                        f"Pod: {cand.podium_probability:>4.0%} | "
+                        f"Win: {cand.win_probability:>4.0%} | "
+                        f"Traffic: {cand.traffic_risk:>3.0%} | "
+                        f"CI: P{cand.p90_position}-P{cand.p10_position}"
+                    )
+                lines.append("")
         
         return Panel(
             "\n".join(lines),

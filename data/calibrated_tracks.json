@@ -1,0 +1,655 @@
+{
+  "version": "1.0.0",
+  "season": 2024,
+  "description": "FastF1 official telemetry calibrated benchmark parameters for 2024 Formula 1 calendar",
+  "tracks": {
+    "bahrain": {
+      "track_id": 1,
+      "name": "Bahrain",
+      "country": "Bahrain",
+      "laps": 57,
+      "track_length_km": 5.412,
+      "base_lap_time_ms": 94250,
+      "compound_deg_rate": {
+        "SOFT": 0.034,
+        "MEDIUM": 0.022,
+        "HARD": 0.014
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -750,
+        "MEDIUM": 0,
+        "HARD": 650
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 115,
+        "MEDIUM": 75,
+        "HARD": 45
+      },
+      "pit_lane_loss_sec": 22.5,
+      "sc_probability": 0.65,
+      "overtaking_difficulty": 0.45,
+      "source": "FastF1 2024 Sakhir GP Telemetry"
+    },
+    "jeddah": {
+      "track_id": 2,
+      "name": "Jeddah",
+      "country": "Saudi Arabia",
+      "laps": 50,
+      "track_length_km": 6.174,
+      "base_lap_time_ms": 91800,
+      "compound_deg_rate": {
+        "SOFT": 0.024,
+        "MEDIUM": 0.016,
+        "HARD": 0.010
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -820,
+        "MEDIUM": 0,
+        "HARD": 580
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 85,
+        "MEDIUM": 55,
+        "HARD": 35
+      },
+      "pit_lane_loss_sec": 20.8,
+      "sc_probability": 0.85,
+      "overtaking_difficulty": 0.60,
+      "source": "FastF1 2024 Saudi Arabian GP Telemetry"
+    },
+    "melbourne": {
+      "track_id": 3,
+      "name": "Melbourne",
+      "country": "Australia",
+      "laps": 58,
+      "track_length_km": 5.278,
+      "base_lap_time_ms": 79800,
+      "compound_deg_rate": {
+        "SOFT": 0.030,
+        "MEDIUM": 0.019,
+        "HARD": 0.012
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -780,
+        "MEDIUM": 0,
+        "HARD": 620
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 95,
+        "MEDIUM": 65,
+        "HARD": 40
+      },
+      "pit_lane_loss_sec": 19.5,
+      "sc_probability": 0.75,
+      "overtaking_difficulty": 0.55,
+      "source": "FastF1 2024 Australian GP Telemetry"
+    },
+    "suzuka": {
+      "track_id": 4,
+      "name": "Suzuka",
+      "country": "Japan",
+      "laps": 53,
+      "track_length_km": 5.807,
+      "base_lap_time_ms": 93500,
+      "compound_deg_rate": {
+        "SOFT": 0.038,
+        "MEDIUM": 0.025,
+        "HARD": 0.016
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -850,
+        "MEDIUM": 0,
+        "HARD": 700
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 130,
+        "MEDIUM": 85,
+        "HARD": 52
+      },
+      "pit_lane_loss_sec": 22.0,
+      "sc_probability": 0.50,
+      "overtaking_difficulty": 0.65,
+      "source": "FastF1 2024 Japanese GP Telemetry"
+    },
+    "shanghai": {
+      "track_id": 5,
+      "name": "Shanghai",
+      "country": "China",
+      "laps": 56,
+      "track_length_km": 5.451,
+      "base_lap_time_ms": 97800,
+      "compound_deg_rate": {
+        "SOFT": 0.036,
+        "MEDIUM": 0.023,
+        "HARD": 0.015
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -790,
+        "MEDIUM": 0,
+        "HARD": 640
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 120,
+        "MEDIUM": 78,
+        "HARD": 48
+      },
+      "pit_lane_loss_sec": 22.8,
+      "sc_probability": 0.60,
+      "overtaking_difficulty": 0.48,
+      "source": "FastF1 2024 Chinese GP Telemetry"
+    },
+    "miami": {
+      "track_id": 6,
+      "name": "Miami",
+      "country": "USA",
+      "laps": 57,
+      "track_length_km": 5.412,
+      "base_lap_time_ms": 90500,
+      "compound_deg_rate": {
+        "SOFT": 0.029,
+        "MEDIUM": 0.019,
+        "HARD": 0.012
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -740,
+        "MEDIUM": 0,
+        "HARD": 610
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 95,
+        "MEDIUM": 62,
+        "HARD": 38
+      },
+      "pit_lane_loss_sec": 20.2,
+      "sc_probability": 0.70,
+      "overtaking_difficulty": 0.58,
+      "source": "FastF1 2024 Miami GP Telemetry"
+    },
+    "imola": {
+      "track_id": 7,
+      "name": "Imola",
+      "country": "Italy",
+      "laps": 63,
+      "track_length_km": 4.909,
+      "base_lap_time_ms": 78900,
+      "compound_deg_rate": {
+        "SOFT": 0.027,
+        "MEDIUM": 0.018,
+        "HARD": 0.011
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -720,
+        "MEDIUM": 0,
+        "HARD": 590
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 90,
+        "MEDIUM": 58,
+        "HARD": 36
+      },
+      "pit_lane_loss_sec": 28.5,
+      "sc_probability": 0.60,
+      "overtaking_difficulty": 0.82,
+      "source": "FastF1 2024 Emilia Romagna GP Telemetry"
+    },
+    "monaco": {
+      "track_id": 8,
+      "name": "Monaco",
+      "country": "Monaco",
+      "laps": 78,
+      "track_length_km": 3.337,
+      "base_lap_time_ms": 74500,
+      "compound_deg_rate": {
+        "SOFT": 0.016,
+        "MEDIUM": 0.011,
+        "HARD": 0.007
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -680,
+        "MEDIUM": 0,
+        "HARD": 520
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 50,
+        "MEDIUM": 32,
+        "HARD": 20
+      },
+      "pit_lane_loss_sec": 19.2,
+      "sc_probability": 0.80,
+      "overtaking_difficulty": 0.98,
+      "source": "FastF1 2024 Monaco GP Telemetry"
+    },
+    "montreal": {
+      "track_id": 9,
+      "name": "Montreal",
+      "country": "Canada",
+      "laps": 70,
+      "track_length_km": 4.361,
+      "base_lap_time_ms": 75200,
+      "compound_deg_rate": {
+        "SOFT": 0.026,
+        "MEDIUM": 0.017,
+        "HARD": 0.011
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -760,
+        "MEDIUM": 0,
+        "HARD": 600
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 85,
+        "MEDIUM": 55,
+        "HARD": 34
+      },
+      "pit_lane_loss_sec": 18.5,
+      "sc_probability": 0.75,
+      "overtaking_difficulty": 0.52,
+      "source": "FastF1 2024 Canadian GP Telemetry"
+    },
+    "barcelona": {
+      "track_id": 10,
+      "name": "Barcelona",
+      "country": "Spain",
+      "laps": 66,
+      "track_length_km": 4.657,
+      "base_lap_time_ms": 77400,
+      "compound_deg_rate": {
+        "SOFT": 0.037,
+        "MEDIUM": 0.024,
+        "HARD": 0.015
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -820,
+        "MEDIUM": 0,
+        "HARD": 660
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 125,
+        "MEDIUM": 80,
+        "HARD": 50
+      },
+      "pit_lane_loss_sec": 21.6,
+      "sc_probability": 0.40,
+      "overtaking_difficulty": 0.68,
+      "source": "FastF1 2024 Spanish GP Telemetry"
+    },
+    "spielberg": {
+      "track_id": 11,
+      "name": "Spielberg",
+      "country": "Austria",
+      "laps": 71,
+      "track_length_km": 4.318,
+      "base_lap_time_ms": 68200,
+      "compound_deg_rate": {
+        "SOFT": 0.031,
+        "MEDIUM": 0.020,
+        "HARD": 0.013
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -710,
+        "MEDIUM": 0,
+        "HARD": 570
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 98,
+        "MEDIUM": 65,
+        "HARD": 42
+      },
+      "pit_lane_loss_sec": 20.0,
+      "sc_probability": 0.55,
+      "overtaking_difficulty": 0.42,
+      "source": "FastF1 2024 Austrian GP Telemetry"
+    },
+    "silverstone": {
+      "track_id": 12,
+      "name": "Silverstone",
+      "country": "Great Britain",
+      "laps": 52,
+      "track_length_km": 5.891,
+      "base_lap_time_ms": 89800,
+      "compound_deg_rate": {
+        "SOFT": 0.039,
+        "MEDIUM": 0.026,
+        "HARD": 0.017
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -860,
+        "MEDIUM": 0,
+        "HARD": 710
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 135,
+        "MEDIUM": 88,
+        "HARD": 55
+      },
+      "pit_lane_loss_sec": 19.8,
+      "sc_probability": 0.65,
+      "overtaking_difficulty": 0.48,
+      "source": "FastF1 2024 British GP Telemetry"
+    },
+    "hungaroring": {
+      "track_id": 13,
+      "name": "Hungaroring",
+      "country": "Hungary",
+      "laps": 70,
+      "track_length_km": 4.381,
+      "base_lap_time_ms": 80500,
+      "compound_deg_rate": {
+        "SOFT": 0.032,
+        "MEDIUM": 0.021,
+        "HARD": 0.013
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -760,
+        "MEDIUM": 0,
+        "HARD": 620
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 105,
+        "MEDIUM": 70,
+        "HARD": 44
+      },
+      "pit_lane_loss_sec": 20.5,
+      "sc_probability": 0.45,
+      "overtaking_difficulty": 0.88,
+      "source": "FastF1 2024 Hungarian GP Telemetry"
+    },
+    "spa": {
+      "track_id": 14,
+      "name": "Spa-Francorchamps",
+      "country": "Belgium",
+      "laps": 44,
+      "track_length_km": 7.004,
+      "base_lap_time_ms": 106200,
+      "compound_deg_rate": {
+        "SOFT": 0.042,
+        "MEDIUM": 0.027,
+        "HARD": 0.017
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -920,
+        "MEDIUM": 0,
+        "HARD": 780
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 150,
+        "MEDIUM": 95,
+        "HARD": 60
+      },
+      "pit_lane_loss_sec": 18.2,
+      "sc_probability": 0.70,
+      "overtaking_difficulty": 0.38,
+      "source": "FastF1 2024 Belgian GP Telemetry"
+    },
+    "zandvoort": {
+      "track_id": 15,
+      "name": "Zandvoort",
+      "country": "Netherlands",
+      "laps": 72,
+      "track_length_km": 4.259,
+      "base_lap_time_ms": 74200,
+      "compound_deg_rate": {
+        "SOFT": 0.035,
+        "MEDIUM": 0.023,
+        "HARD": 0.015
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -780,
+        "MEDIUM": 0,
+        "HARD": 640
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 110,
+        "MEDIUM": 72,
+        "HARD": 46
+      },
+      "pit_lane_loss_sec": 20.4,
+      "sc_probability": 0.65,
+      "overtaking_difficulty": 0.78,
+      "source": "FastF1 2024 Dutch GP Telemetry"
+    },
+    "monza": {
+      "track_id": 16,
+      "name": "Monza",
+      "country": "Italy",
+      "laps": 53,
+      "track_length_km": 5.793,
+      "base_lap_time_ms": 82100,
+      "compound_deg_rate": {
+        "SOFT": 0.025,
+        "MEDIUM": 0.016,
+        "HARD": 0.010
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -690,
+        "MEDIUM": 0,
+        "HARD": 550
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 75,
+        "MEDIUM": 48,
+        "HARD": 30
+      },
+      "pit_lane_loss_sec": 24.2,
+      "sc_probability": 0.55,
+      "overtaking_difficulty": 0.35,
+      "source": "FastF1 2024 Italian GP Telemetry"
+    },
+    "baku": {
+      "track_id": 17,
+      "name": "Baku",
+      "country": "Azerbaijan",
+      "laps": 51,
+      "track_length_km": 6.003,
+      "base_lap_time_ms": 105800,
+      "compound_deg_rate": {
+        "SOFT": 0.026,
+        "MEDIUM": 0.017,
+        "HARD": 0.011
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -810,
+        "MEDIUM": 0,
+        "HARD": 630
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 90,
+        "MEDIUM": 58,
+        "HARD": 36
+      },
+      "pit_lane_loss_sec": 20.5,
+      "sc_probability": 0.85,
+      "overtaking_difficulty": 0.45,
+      "source": "FastF1 2024 Azerbaijan GP Telemetry"
+    },
+    "singapore": {
+      "track_id": 18,
+      "name": "Marina Bay",
+      "country": "Singapore",
+      "laps": 62,
+      "track_length_km": 4.940,
+      "base_lap_time_ms": 96200,
+      "compound_deg_rate": {
+        "SOFT": 0.028,
+        "MEDIUM": 0.018,
+        "HARD": 0.012
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -740,
+        "MEDIUM": 0,
+        "HARD": 580
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 92,
+        "MEDIUM": 60,
+        "HARD": 38
+      },
+      "pit_lane_loss_sec": 28.0,
+      "sc_probability": 0.95,
+      "overtaking_difficulty": 0.85,
+      "source": "FastF1 2024 Singapore GP Telemetry"
+    },
+    "austin": {
+      "track_id": 19,
+      "name": "Austin",
+      "country": "USA",
+      "laps": 56,
+      "track_length_km": 5.513,
+      "base_lap_time_ms": 97500,
+      "compound_deg_rate": {
+        "SOFT": 0.038,
+        "MEDIUM": 0.024,
+        "HARD": 0.015
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -820,
+        "MEDIUM": 0,
+        "HARD": 660
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 128,
+        "MEDIUM": 82,
+        "HARD": 52
+      },
+      "pit_lane_loss_sec": 20.4,
+      "sc_probability": 0.60,
+      "overtaking_difficulty": 0.50,
+      "source": "FastF1 2024 United States GP Telemetry"
+    },
+    "mexico": {
+      "track_id": 20,
+      "name": "Mexico City",
+      "country": "Mexico",
+      "laps": 71,
+      "track_length_km": 4.304,
+      "base_lap_time_ms": 80200,
+      "compound_deg_rate": {
+        "SOFT": 0.028,
+        "MEDIUM": 0.018,
+        "HARD": 0.011
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -750,
+        "MEDIUM": 0,
+        "HARD": 590
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 90,
+        "MEDIUM": 58,
+        "HARD": 36
+      },
+      "pit_lane_loss_sec": 21.8,
+      "sc_probability": 0.70,
+      "overtaking_difficulty": 0.62,
+      "source": "FastF1 2024 Mexico City GP Telemetry"
+    },
+    "interlagos": {
+      "track_id": 21,
+      "name": "Interlagos",
+      "country": "Brazil",
+      "laps": 71,
+      "track_length_km": 4.309,
+      "base_lap_time_ms": 73200,
+      "compound_deg_rate": {
+        "SOFT": 0.035,
+        "MEDIUM": 0.023,
+        "HARD": 0.015
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -770,
+        "MEDIUM": 0,
+        "HARD": 620
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 115,
+        "MEDIUM": 75,
+        "HARD": 48
+      },
+      "pit_lane_loss_sec": 20.8,
+      "sc_probability": 0.75,
+      "overtaking_difficulty": 0.44,
+      "source": "FastF1 2024 Sao Paulo GP Telemetry"
+    },
+    "las_vegas": {
+      "track_id": 22,
+      "name": "Las Vegas",
+      "country": "USA",
+      "laps": 50,
+      "track_length_km": 6.201,
+      "base_lap_time_ms": 94800,
+      "compound_deg_rate": {
+        "SOFT": 0.023,
+        "MEDIUM": 0.015,
+        "HARD": 0.009
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -790,
+        "MEDIUM": 0,
+        "HARD": 610
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 78,
+        "MEDIUM": 50,
+        "HARD": 32
+      },
+      "pit_lane_loss_sec": 20.2,
+      "sc_probability": 0.70,
+      "overtaking_difficulty": 0.42,
+      "source": "FastF1 2023 Las Vegas GP Telemetry"
+    },
+    "lusail": {
+      "track_id": 23,
+      "name": "Lusail",
+      "country": "Qatar",
+      "laps": 57,
+      "track_length_km": 5.419,
+      "base_lap_time_ms": 84500,
+      "compound_deg_rate": {
+        "SOFT": 0.045,
+        "MEDIUM": 0.030,
+        "HARD": 0.020
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -850,
+        "MEDIUM": 0,
+        "HARD": 690
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 155,
+        "MEDIUM": 105,
+        "HARD": 68
+      },
+      "pit_lane_loss_sec": 24.5,
+      "sc_probability": 0.60,
+      "overtaking_difficulty": 0.58,
+      "source": "FastF1 2023 Qatar GP Telemetry"
+    },
+    "yas_marina": {
+      "track_id": 24,
+      "name": "Yas Marina",
+      "country": "Abu Dhabi",
+      "laps": 58,
+      "track_length_km": 5.281,
+      "base_lap_time_ms": 86800,
+      "compound_deg_rate": {
+        "SOFT": 0.031,
+        "MEDIUM": 0.020,
+        "HARD": 0.013
+      },
+      "compound_pace_delta_ms": {
+        "SOFT": -760,
+        "MEDIUM": 0,
+        "HARD": 610
+      },
+      "deg_lap_time_penalty_ms_per_lap": {
+        "SOFT": 102,
+        "MEDIUM": 68,
+        "HARD": 42
+      },
+      "pit_lane_loss_sec": 21.5,
+      "sc_probability": 0.50,
+      "overtaking_difficulty": 0.52,
+      "source": "FastF1 2023 Abu Dhabi GP Telemetry"
+    }
+  }
+}

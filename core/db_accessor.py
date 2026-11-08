@@ -48,6 +48,30 @@ def _safe_enum(enum_cls, val, default=None):
         return default if default is not None else list(enum_cls)[0]
 
 
+# In F1 Manager 2024 database (Save_CarTyreAllocation.WeekendTyreType / Save_PlayerStrategyStints.TyreType):
+# 0 = Hard, 1 = Medium, 2 = Soft, 3 = Inter, 4 = Wet
+DB_TYRE_COMPOUND_MAP: dict[int, TyreCompound] = {
+    0: TyreCompound.HARD,
+    1: TyreCompound.MEDIUM,
+    2: TyreCompound.SOFT,
+    3: TyreCompound.INTER,
+    4: TyreCompound.WET,
+}
+
+
+def parse_db_tyre_compound(val, default: TyreCompound = TyreCompound.MEDIUM) -> TyreCompound:
+    """Map database WeekendTyreType/TyreType (0=H, 1=M, 2=S, 3=I, 4=W) to TyreCompound."""
+    if isinstance(val, TyreCompound):
+        return val
+    if val is None:
+        return default
+    try:
+        iv = int(val)
+        return DB_TYRE_COMPOUND_MAP.get(iv, default)
+    except (ValueError, TypeError):
+        return default
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # TABLE EXISTENCE CHECK
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -469,7 +493,7 @@ def get_tyre_allocations(conn: sqlite3.Connection) -> list[TyreSetState]:
     return [TyreSetState(
         car_id=r["CarID"],
         tyre_set_id=r["TyreSetID"],
-        weekend_tyre_type=_safe_enum(TyreCompound, r["WeekendTyreType"]),
+        weekend_tyre_type=parse_db_tyre_compound(r["WeekendTyreType"]),
         front_left_wear=_safe_float(r["FrontLeftWear"]),
         front_right_wear=_safe_float(r["FrontRightWear"]),
         back_left_wear=_safe_float(r["BackLeftWear"]),
@@ -491,7 +515,7 @@ def get_tyre_allocations_for_car(conn: sqlite3.Connection, car_id: int) -> list[
     return [TyreSetState(
         car_id=r["CarID"],
         tyre_set_id=r["TyreSetID"],
-        weekend_tyre_type=_safe_enum(TyreCompound, r["WeekendTyreType"]),
+        weekend_tyre_type=parse_db_tyre_compound(r["WeekendTyreType"]),
         front_left_wear=_safe_float(r["FrontLeftWear"]),
         front_right_wear=_safe_float(r["FrontRightWear"]),
         back_left_wear=_safe_float(r["BackLeftWear"]),
@@ -512,7 +536,7 @@ def get_player_strategy(conn: sqlite3.Connection) -> list[StrategyStint]:
         strategy_id=r["StrategyID"],
         stint_id=r["StintID"],
         tyre_durability=_safe_float(r["TyreDurability"]),
-        tyre_type=_safe_enum(TyreCompound, r["TyreType"]),
+        tyre_type=parse_db_tyre_compound(r["TyreType"]),
         tyre_set_id=_safe_int(r["TyreSetID"]),
         pit_window_start=_safe_int(r["PitWindowStart"]),
         optimal_pit_lap=_safe_int(r["OptimalPitLap"]),

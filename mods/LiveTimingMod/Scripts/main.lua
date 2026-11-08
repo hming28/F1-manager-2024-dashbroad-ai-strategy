@@ -134,6 +134,15 @@ local function FormatCarEntry(car, index)
     local s3State = SafeNumber(SafeGet(carData, "Sector3State", 0))
 
     local tyreCompound = SafeNumber(SafeGet(carData, "TyreCompound", 0))
+    local tyreType = SafeNumber(SafeGet(carData, "TyreType", -1), -1)
+    -- If dry compound is 0/unset, check TyreType (in ETyreType: 6 = Inter, 7 = Wet)
+    if tyreCompound == 0 and tyreType >= 0 then
+        if tyreType == 6 then
+            tyreCompound = 4 -- Inter
+        elseif tyreType == 7 then
+            tyreCompound = 5 -- Wet
+        end
+    end
     local tyreWear = SafeNumber(SafeGet(carData, "TyreWearPercentage", 0))
     local tyreTemp = SafeNumber(SafeGet(carData, "TyreTemperature", 0))
     local ersCharge = SafeNumber(SafeGet(carData, "ERSBatteryChargePercentage", 0))
@@ -149,12 +158,12 @@ local function FormatCarEntry(car, index)
     local completeState = SafeNumber(SafeGet(carData, "RaceCompleteState", 0))
 
     return string.format(
-        [[{"car_index":%d,"driver_name":"%s","driver_code":"%s","driver_number":%d,"team_name":"%s","position":%d,"lap_count":%d,"lap_progress":%.4f,"current_lap_time":%.3f,"last_lap_time":%.3f,"best_lap_time":%.3f,"gap_to_leader":%.3f,"s1_time":%.3f,"s1_state":%d,"s2_time":%.3f,"s2_state":%d,"s3_time":%.3f,"s3_state":%d,"tyre_compound":%d,"tyre_wear":%d,"tyre_temp":%d,"ers_charge":%d,"drs_state":%d,"fuel":%.2f,"speed_kph":%d,"gear":%d,"is_in_pit":%s,"race_complete_state":%d}]],
+        [[{"car_index":%d,"driver_name":"%s","driver_code":"%s","driver_number":%d,"team_name":"%s","position":%d,"lap_count":%d,"lap_progress":%.4f,"current_lap_time":%.3f,"last_lap_time":%.3f,"best_lap_time":%.3f,"gap_to_leader":%.3f,"s1_time":%.3f,"s1_state":%d,"s2_time":%.3f,"s2_state":%d,"s3_time":%.3f,"s3_state":%d,"tyre_compound":%d,"tyre_type":%d,"tyre_wear":%d,"tyre_temp":%d,"ers_charge":%d,"drs_state":%d,"fuel":%.2f,"speed_kph":%d,"gear":%d,"is_in_pit":%s,"race_complete_state":%d}]],
         simId, driverName, driverCode, driverNumber, teamName,
         pos, lapCount, lapProgress, curLapTime, lastLapTime,
         bestLap, deltaLead,
         s1Time, s1State, s2Time, s2State, s3Time, s3State,
-        tyreCompound, tyreWear, tyreTemp, ersCharge, drsState,
+        tyreCompound, tyreType, tyreWear, tyreTemp, ersCharge, drsState,
         fuel, speedKph, gear, inPit and "true" or "false", completeState
     )
 end

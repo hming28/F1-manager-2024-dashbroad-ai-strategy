@@ -9,7 +9,7 @@ import os
 import zipfile
 from pathlib import Path
 
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 
 def create_release_zip():
     repo_dir = Path(__file__).resolve().parent
@@ -37,7 +37,7 @@ def create_release_zip():
                 
         # Include installation readme inside zip
         readme_content = (
-            "F1 Manager 2024 — Live Timing Mod v1.0.0\n"
+            f"F1 Manager 2024 — Live Timing Mod v{VERSION}\n"
             "========================================\n\n"
             "Installation:\n"
             "Extract the 'ue4ss' folder from this zip into your game binaries directory:\n"
