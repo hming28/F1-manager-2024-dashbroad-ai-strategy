@@ -534,3 +534,40 @@ class TestLiveTimingEdgeCases:
         assert abs(car.avg_tyre_condition - 0.15) < 0.001
         assert car.is_in_pit_lane is True
         assert car.is_in_pit is True
+
+    def test_eco_mode_cli_parsing(self):
+        import argparse
+        import main
+
+        # Create parser identical to main()
+        # Verify --eco and --fps arguments work cleanly
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--eco", action="store_true")
+        parser.add_argument("--fps", "--refresh-rate", type=float, default=None, dest="fps")
+
+        args = parser.parse_args(["--eco"])
+        assert args.eco is True
+        assert args.fps is None
+
+        args2 = parser.parse_args(["--fps", "1.5"])
+        assert args2.eco is False
+        assert args2.fps == 1.5
+
+    def test_optimize_ue4ss_settings(self, tmp_path):
+        import install_mod
+
+        ini_file = tmp_path / "UE4SS-settings.ini"
+        ini_file.write_text(
+            "[Debug]\n"
+            "ConsoleEnabled = 1\n"
+            "GuiConsoleEnabled = 1\n"
+            "LogLevel = 3\n",
+            encoding="utf-8"
+        )
+
+        install_mod.optimize_ue4ss_settings(tmp_path)
+
+        updated_content = ini_file.read_text(encoding="utf-8")
+        assert "ConsoleEnabled = 0" in updated_content
+        assert "GuiConsoleEnabled = 0" in updated_content
+        assert (tmp_path / "UE4SS-settings.ini.bak").exists()

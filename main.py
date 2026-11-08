@@ -187,10 +187,20 @@ def run_monitor(
     live_path: Optional[str] = None,
     force_live: bool = False,
     force_save: bool = False,
+    eco: bool = False,
+    fps: Optional[float] = None,
 ):
     """Start the real-time monitoring mode with dual-mode auto-detection."""
     console.print("\n[bold cyan]═══ Real-Time Strategy Monitor (Dual Mode) ═══[/bold cyan]\n")
     console.print("[dim]Auto-detecting Live Timing in-race telemetry & save file updates...[/dim]\n")
+    
+    # Configure refresh rate & loop sleep based on eco mode and custom fps
+    target_fps = fps if fps is not None else (1.0 if eco else 2.0)
+    loop_interval = 1.0 / max(target_fps, 0.2)
+    rich_refresh_rate = max(1, int(round(target_fps)))
+
+    if eco:
+        console.print("[bold green]🌱 Eco Mode Active:[/bold green] [dim]Low-spec optimization enabled (1 FPS refresh, minimal CPU & I/O usage)[/dim]\n")
     
     live_reader = LiveTimingReader(json_path=live_path)
     console.print(f"[green]✓[/green] Live Timing stream target: {live_reader.json_path}")
@@ -254,9 +264,9 @@ def run_monitor(
             watcher = SavePoller(save_dir=save_dir, callback=on_save_update, poll_interval_sec=1.0)
             watcher.start()
     
-    # Live display loop (higher refresh rate to smoothly show sector and running times)
+    # Live display loop (configurable refresh rate for smooth display vs low-spec eco savings)
     try:
-        with Live(console=console, refresh_per_second=5) as live:
+        with Live(console=console, refresh_per_second=rich_refresh_rate) as live:
             while running:
                 is_live_active = (not force_save) and (force_live or live_reader.is_live())
 
@@ -267,12 +277,12 @@ def run_monitor(
                         last_live_snapshot = live_snapshot
                         last_live_state = live_state
                         dashboard.render(live_snapshot, live_state, live=live)
-                        time.sleep(0.20)
+                        time.sleep(loop_interval)
                         continue
                     elif last_live_snapshot and last_live_state and (force_live or live_reader.is_paused()):
                         # Keep displaying paused live snapshot without jarring fallback
                         dashboard.render(last_live_snapshot, last_live_state, live=live)
-                        time.sleep(0.20)
+                        time.sleep(loop_interval)
                         continue
 
                 # Fallback to savefile data when outside live 3D race
@@ -288,7 +298,7 @@ def run_monitor(
                     )
                     live.update(Panel(status_msg, title="🏎️ F1 Strategy AI"))
 
-                time.sleep(0.40)
+                time.sleep(max(loop_interval, 0.50))
     except KeyboardInterrupt:
         pass
     finally:
@@ -364,6 +374,18 @@ Examples:
         help="Disable live timing and force savefile monitoring only",
     )
     parser.add_argument(
+        "--eco",
+        action="store_true",
+        help="Enable low-spec eco mode (1 FPS refresh, minimal CPU & disk I/O usage)",
+    )
+    parser.add_argument(
+        "--fps", "--refresh-rate",
+        type=float,
+        default=None,
+        dest="fps",
+        help="Custom dashboard UI refresh rate in FPS (default: 2.0, or 1.0 in --eco mode)",
+    )
+    parser.add_argument(
         "--log-level",
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
@@ -409,6 +431,8 @@ Examples:
             live_path=args.live_path,
             force_live=args.force_live,
             force_save=args.force_save,
+            eco=args.eco,
+            fps=args.fps,
         )
 
 

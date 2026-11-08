@@ -13,7 +13,9 @@ local cachedCars = {}
 local isInitialized = false
 local tickCount = 0
 local lastWriteClock = 0.0
-local WRITE_INTERVAL_SEC = 0.20  -- 200ms refresh rate (~5 Hz)
+local lastCarSearchClock = 0.0
+local WRITE_INTERVAL_SEC = 0.50       -- 500ms refresh rate (~2 Hz, balanced performance & responsiveness)
+local CAR_SEARCH_COOLDOWN_SEC = 2.5  -- Minimum 2.5s between expensive FindAllOf global object searches
 local hookRegistered = false
 
 print("[LiveTimingMod] Loading LiveTimingMod...")
@@ -168,6 +170,7 @@ local function ExportLiveTiming()
             print("[LiveTimingMod] Car actor invalidated, resetting car cache...")
             isInitialized = false
             cachedCars = {}
+            lastCarSearchClock = os.clock()
             return
         end
 
@@ -207,15 +210,18 @@ end
 local function OnTick()
     tickCount = tickCount + 1
 
-    -- Periodic car scan if not yet initialized (try immediately on frame 1)
+    -- Cooldown-protected car scan if not yet initialized
+    -- (prevents expensive FindAllOf UObject traversal from being triggered 20 times/sec)
     if not isInitialized then
-        if tickCount == 1 or tickCount % 60 == 0 then
-            TryInitCars()
+        local nowClock = os.clock()
+        if nowClock - lastCarSearchClock >= CAR_SEARCH_COOLDOWN_SEC then
+            lastCarSearchClock = nowClock
+            pcall(TryInitCars)
         end
         return
     end
 
-    -- Throttle file writing
+    -- Throttle file writing (synchronous I/O throttled to WRITE_INTERVAL_SEC)
     local nowClock = os.clock()
     if nowClock - lastWriteClock >= WRITE_INTERVAL_SEC then
         lastWriteClock = nowClock
@@ -231,12 +237,14 @@ local function RegisterHooks()
 
     pcall(function()
         RegisterHook("/Script/RaceSim.CarEventManagerComponent:OnRaceSimEventReceived", function(self, i_event)
-            -- Trigger immediate export on critical checkpoint events
+            -- Checkpoint event hook: retry initialization if cars not ready.
+            -- NOTE: Do NOT synchronously write file here to prevent massive I/O lag storms at 4x/8x/16x game speeds.
             if not isInitialized then
-                pcall(TryInitCars)
-            end
-            if isInitialized then
-                pcall(ExportLiveTiming)
+                local nowClock = os.clock()
+                if nowClock - lastCarSearchClock >= CAR_SEARCH_COOLDOWN_SEC then
+                    lastCarSearchClock = nowClock
+                    pcall(TryInitCars)
+                end
             end
         end)
     end)

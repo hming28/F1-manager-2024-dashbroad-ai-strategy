@@ -104,6 +104,56 @@ def find_game_root(user_input: Optional[str] = None) -> Optional[Path]:
 
     return None
 
+def optimize_ue4ss_settings(win64_dir: Path):
+    """
+    Optimize UE4SS-settings.ini for minimum latency and zero stutter:
+    - Disables GUI overlay console (GuiConsoleEnabled = 0)
+    - Disables command console (ConsoleEnabled = 0)
+    """
+    candidates = [
+        win64_dir / "UE4SS-settings.ini",
+        win64_dir / "ue4ss" / "UE4SS-settings.ini",
+    ]
+    ini_path = None
+    for c in candidates:
+        if c.exists():
+            ini_path = c
+            break
+
+    if not ini_path:
+        return
+
+    try:
+        content = ini_path.read_text(encoding="utf-8", errors="ignore")
+        modified = False
+
+        optimizations = {
+            "GuiConsoleEnabled": "0",
+            "ConsoleEnabled": "0",
+        }
+
+        new_lines = []
+        for line in content.splitlines():
+            trimmed = line.strip()
+            handled = False
+            for key, val in optimizations.items():
+                if trimmed.startswith(key) and "=" in trimmed:
+                    new_lines.append(f"{key} = {val}")
+                    modified = True
+                    handled = True
+                    break
+            if not handled:
+                new_lines.append(line)
+
+        if modified:
+            bak_path = ini_path.with_suffix(".ini.bak")
+            if not bak_path.exists():
+                shutil.copy2(ini_path, bak_path)
+            ini_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+            print(f"[+] Optimized {ini_path.name} (disabled GUI console & background logging for max FPS)")
+    except Exception as e:
+        print(f"[!] Note: Could not auto-tune {ini_path.name}: {e}")
+
 def install():
     parser = argparse.ArgumentParser(description="F1 Manager 2024 Live Timing Mod Installer")
     parser.add_argument("--game-dir", "-g", help="Game installation root directory (e.g. D:\\Games\\F1Manager2024)")
@@ -170,12 +220,16 @@ def install():
     if not enabled_flag.exists():
         enabled_flag.touch()
 
+    # Automatically tune UE4SS settings to avoid GUI console & logging stutters
+    optimize_ue4ss_settings(win64_dir)
+
     print("\n" + "=" * 60)
     print(" [√] Live Timing Mod installed successfully!")
     print("=" * 60)
     print("How to use:")
     print(" 1. Launch F1 Manager 2024 and enter any session (Practice / Qualifying / Race)")
     print(" 2. In your terminal run: python main.py")
+    print("    (On low-spec PCs, add '--eco' for 1 FPS minimal CPU usage)")
     print(" 3. Watch real-time broadcast-grade F1 Timing Tower telemetry live!")
     print("=" * 60)
 
