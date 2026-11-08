@@ -1,0 +1,33 @@
+# F1 Manager 2024 AI Strategy System Configuration
+# =================================================
+
+# Save file directory (Windows path, auto-detected)
+# Default: %LOCALAPPDATA%\F1Manager24\Saved\SaveGames
+save_dir: null  # null = auto-detect
+
+# Your team ID (1-10, set after first load)
+my_team_id: null
+
+# Your driver IDs (auto-detected from team)
+my_drivers: null
+
+# Strategy preferences
+strategy:
+  # Risk level: conservative / balanced / aggressive
+  risk_level: balanced
+  
+  # Auto-accept safety car pit stops?
+  auto_sc_pit: true
+  
+  # Prefer overcut or undercut when tied?
+  undercut_preference: 0.6  # 0.0 = always overcut, 1.0 = always undercut
+
+# Display
+display:
+  refresh_rate_ms: 500
+  show_all_cars: true
+  notifications: true
+
+# Logging
+log_level: INFO
+log_file: logs/strategy.log

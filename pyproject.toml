@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "f1-manager-2024-strategy-ai"
+version = "1.0.0"
+description = "Real-time AI strategy assistant & live timing telemetry for F1 Manager 2024"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["f1-manager-2024", "f1", "strategy-ai", "telemetry", "live-timing", "ue4ss"]
+authors = [
+    { name = "F1 Manager Strategy AI Team" }
+]
+dependencies = [
+    "watchdog>=3.0.0",
+    "rich>=13.0.0",
+    "numpy>=1.24.0",
+    "pyyaml>=6.0",
+    "pymem>=1.12.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+f1-strategy = "main:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
