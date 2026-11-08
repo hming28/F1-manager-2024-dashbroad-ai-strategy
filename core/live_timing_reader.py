@@ -29,8 +29,54 @@ logger = logging.getLogger(__name__)
 DEFAULT_MOD_PATHS = [
     Path(r"d:\Games\F1Manager2024\F1Manager24\Binaries\Win64\ue4ss\Mods\LiveTimingMod\live_timing.json"),
     Path(r"C:\Games\F1Manager2024\F1Manager24\Binaries\Win64\ue4ss\Mods\LiveTimingMod\live_timing.json"),
+    Path(r"C:\Program Files\Epic Games\F1Manager2024\F1Manager24\Binaries\Win64\ue4ss\Mods\LiveTimingMod\live_timing.json"),
+    Path(r"C:\Program Files (x86)\Steam\steamapps\common\F1 Manager 2024\F1Manager24\Binaries\Win64\ue4ss\Mods\LiveTimingMod\live_timing.json"),
     Path(r"d:\hermes_agents\projects\f1-manager-2024-strategy-ai\live_timing.json"),
 ]
+
+def discover_live_timing_paths() -> list[Path]:
+    """Dynamically discover candidate paths for live_timing.json across Epic Games, Steam, and preset drives."""
+    discovered: list[Path] = []
+    
+    # 1. Epic Games Launcher Manifests
+    try:
+        program_data = os.environ.get("ProgramData", r"C:\ProgramData")
+        manifests_dir = Path(program_data) / "Epic" / "EpicGamesLauncher" / "Data" / "Manifests"
+        if manifests_dir.exists():
+            for item_file in manifests_dir.glob("*.item"):
+                try:
+                    with open(item_file, "r", encoding="utf-8", errors="ignore") as f:
+                        data = json.load(f)
+                        if "F1" in data.get("DisplayName", "") and "2024" in data.get("DisplayName", ""):
+                            loc = Path(data.get("InstallLocation", ""))
+                            target = loc / "F1Manager24" / "Binaries" / "Win64" / "ue4ss" / "Mods" / "LiveTimingMod" / "live_timing.json"
+                            discovered.append(target)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    # 2. Steam Registry & libraries
+    try:
+        import winreg
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam")
+        steam_path_val, _ = winreg.QueryValueEx(key, "SteamPath")
+        winreg.CloseKey(key)
+        steam_path = Path(steam_path_val)
+        vdf_file = steam_path / "steamapps" / "libraryfolders.vdf"
+        if vdf_file.exists():
+            with open(vdf_file, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            import re
+            for match in re.finditer(r'"path"\s+"([^"]+)"', content):
+                lib_path = Path(match.group(1).replace(r"\\", "\\"))
+                target = lib_path / "steamapps" / "common" / "F1 Manager 2024" / "F1Manager24" / "Binaries" / "Win64" / "ue4ss" / "Mods" / "LiveTimingMod" / "live_timing.json"
+                discovered.append(target)
+    except Exception:
+        pass
+
+    discovered.extend(DEFAULT_MOD_PATHS)
+    return discovered
 
 # Team name to ID mapping (matches F1 Manager 2024 database Teams table & EF1Team enum)
 TEAM_NAME_TO_ID = {
@@ -536,8 +582,8 @@ class LiveTimingReader:
             if p.exists() or p.parent.exists():
                 return p
 
-        # Check default paths
-        for p in DEFAULT_MOD_PATHS:
+        # Check dynamically discovered paths (Epic Games, Steam, preset drives)
+        for p in discover_live_timing_paths():
             if p.exists() or p.parent.exists():
                 return p
 

@@ -13,12 +13,44 @@ from pathlib import Path
 from typing import Optional, List
 
 CANDIDATE_PATHS = [
+    # Custom / Direct
     r"D:\Games\F1Manager2024",
+    r"C:\Games\F1Manager2024",
+    r"E:\Games\F1Manager2024",
+    # Epic Games Store
+    r"C:\Program Files\Epic Games\F1Manager2024",
+    r"D:\Epic Games\F1Manager2024",
+    r"E:\Epic Games\F1Manager2024",
+    r"C:\Program Files\Epic Games\F1 Manager 2024",
+    r"D:\Epic Games\F1 Manager 2024",
+    # Steam
     r"C:\Program Files (x86)\Steam\steamapps\common\F1 Manager 2024",
     r"D:\SteamLibrary\steamapps\common\F1 Manager 2024",
     r"E:\SteamLibrary\steamapps\common\F1 Manager 2024",
     r"F:\SteamLibrary\steamapps\common\F1 Manager 2024",
+    # Xbox / Game Pass
+    r"C:\XboxGames\F1 Manager 2024",
+    r"D:\XboxGames\F1 Manager 2024",
 ]
+
+def find_epic_game_path() -> Optional[Path]:
+    """尝试从 Epic Games Launcher 的 Manifest 清单文件中精准定位安装目录"""
+    import json
+    program_data = os.environ.get("ProgramData", r"C:\ProgramData")
+    manifests_dir = Path(program_data) / "Epic" / "EpicGamesLauncher" / "Data" / "Manifests"
+    if manifests_dir.exists():
+        for item_file in manifests_dir.glob("*.item"):
+            try:
+                with open(item_file, "r", encoding="utf-8", errors="ignore") as f:
+                    data = json.load(f)
+                    display_name = data.get("DisplayName", "")
+                    if "F1" in display_name and "Manager" in display_name and "2024" in display_name:
+                        loc = Path(data.get("InstallLocation", ""))
+                        if loc.exists() and (loc / "F1Manager24" / "Binaries" / "Win64").exists():
+                            return loc
+            except Exception:
+                pass
+    return None
 
 def find_steam_game_path() -> Optional[Path]:
     """尝试从 Steam 注册表和库文件中定位游戏安装目录"""
@@ -37,26 +69,33 @@ def find_steam_game_path() -> Optional[Path]:
             for match in re.finditer(r'"path"\s+"([^"]+)"', content):
                 lib_path = Path(match.group(1).replace(r"\\", "\\"))
                 game_dir = lib_path / "steamapps" / "common" / "F1 Manager 2024"
-                if game_dir.exists():
+                if game_dir.exists() and (game_dir / "F1Manager24" / "Binaries" / "Win64").exists():
                     return game_dir
     except Exception:
         pass
     return None
 
 def find_game_root(user_input: Optional[str] = None) -> Optional[Path]:
-    """定位游戏根目录"""
+    """定位游戏根目录 (支持 Epic Games、Steam 及自定义路径)"""
     if user_input:
         p = Path(user_input).resolve()
         if p.exists():
             return p
         print(f"[!] 指定的路径不存在: {user_input}")
 
-    # 1. 检查注册表 Steam 库
+    # 1. 优先检查 Epic Games 清单 (精准匹配)
+    epic_dir = find_epic_game_path()
+    if epic_dir and epic_dir.exists():
+        print(f"[+] 自动检测到 Epic Games 版本: {epic_dir}")
+        return epic_dir
+
+    # 2. 检查注册表 Steam 库
     steam_dir = find_steam_game_path()
     if steam_dir and steam_dir.exists():
+        print(f"[+] 自动检测到 Steam 版本: {steam_dir}")
         return steam_dir
 
-    # 2. 检查常见预设路径
+    # 3. 检查常见预设路径
     for path_str in CANDIDATE_PATHS:
         p = Path(path_str)
         if p.exists() and (p / "F1Manager24" / "Binaries" / "Win64").exists():
