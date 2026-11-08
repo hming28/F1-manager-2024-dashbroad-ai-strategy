@@ -43,8 +43,8 @@ Monitors in-race 3D telemetry via UE4SS (250ms refresh rate) with official secto
 
 Clone the repository and install Python dependencies:
 ```bash
-git clone https://github.com/<your-username>/f1-manager-2024-strategy-ai.git
-cd f1-manager-2024-strategy-ai
+git clone https://github.com/hming28/F1-manager-2024-dashbroad-ai-strategy.git
+cd F1-manager-2024-dashbroad-ai-strategy
 
 pip install -r requirements.txt
 ```
