@@ -32,16 +32,14 @@ Monitors in-race 3D telemetry via UE4SS (250ms refresh rate) with official secto
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & Installation
 
-### 1. Prerequisites
-- Python 3.10 or higher.
-- F1 Manager 2024 installed (Epic Games Store, Steam, Xbox Game Pass, etc.).
-- [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS/releases) installed in your game's `F1Manager24/Binaries/Win64/` (v3.x standard).
+Choose the installation option that best fits your workflow:
 
-### 2. Installation
+### Option A: Full AI Strategy Assistant & Live Timing (Recommended)
+*For players who want the full broadcast-grade terminal timing tower and real-time AI pit/tyre strategy recommendations.*
 
-Clone the repository and install Python dependencies:
+#### 1. Clone the repository & install dependencies
 ```bash
 git clone https://github.com/hming28/F1-manager-2024-dashbroad-ai-strategy.git
 cd F1-manager-2024-dashbroad-ai-strategy
@@ -49,23 +47,43 @@ cd F1-manager-2024-dashbroad-ai-strategy
 pip install -r requirements.txt
 ```
 
-Deploy the Live Timing mod to your game with our **One-Click Installer**:
+#### 2. Deploy the game mod (One-Click Installer)
 ```bash
 python install_mod.py
 ```
-> The script auto-detects your Epic Games, Steam, or Xbox Game Pass library path and deploys `LiveTimingMod` into `ue4ss/Mods/`.
-> *(Alternatively, download the pre-packaged zip from [Releases](../../releases) and drop it into `F1Manager24/Binaries/Win64/`)*.
+> 💡 Automatically detects your **Epic Games Store**, **Steam**, or **Xbox Game Pass** game directory and deploys `LiveTimingMod` into `ue4ss/Mods/`. If UE4SS is not yet installed, the installer provides the exact setup guide.
 
-### 3. Run the Strategy Assistant
+#### 3. Launch game & start strategy assistant
+- Open **F1 Manager 2024** and start any session (Practice, Qualifying, or Race).
+- In your terminal, run:
+  ```bash
+  # Auto-detect and monitor all 20 cars
+  python main.py
 
-Launch **F1 Manager 2024**, enter any race session, and run:
-```bash
-# Auto-detect all cars
-python main.py
+  # Or highlight your specific team (e.g. 1=Ferrari, 2=McLaren, 3=RedBull, 10=AstonMartin)
+  python main.py --team 1
+  ```
 
-# Or highlight your specific team (e.g. 1=Ferrari, 2=McLaren, 3=RedBull, 4=Mercedes, 10=AstonMartin)
-python main.py --team 1
-```
+---
+
+### Option B: Standalone Game Mod Only (No Python Required)
+*For players who only want the game mod to export live telemetry without setting up Python.*
+
+1. **Download the pre-packaged Mod**:
+   - Go to [v1.0.0 Release](https://github.com/hming28/F1-manager-2024-dashbroad-ai-strategy/releases/tag/v1.0.0).
+   - Under **Assets**, download `F1Manager24-LiveTimingMod-v1.0.0.zip`.
+
+2. **Install UE4SS Framework (Prerequisite)**:
+   - Download the UE4SS release from [RE-UE4SS Releases](https://github.com/UE4SS-RE/RE-UE4SS/releases) (e.g. `UE4SS_v3.0.1.zip`).
+   - Extract the files into your game's binaries directory:
+     `<Game_Directory>\F1Manager24\Binaries\Win64\`
+
+3. **Install the Mod**:
+   - Extract `F1Manager24-LiveTimingMod-v1.0.0.zip` directly into the same directory:
+     `<Game_Directory>\F1Manager24\Binaries\Win64\`
+   - Done! During any race, the mod will automatically generate live telemetry at `ue4ss\Mods\LiveTimingMod\live_timing.json`.
+
+---
 
 #### Team ID Reference
 | ID | Team | ID | Team |
