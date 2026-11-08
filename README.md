@@ -32,14 +32,14 @@ Monitors in-race 3D telemetry via UE4SS (250ms refresh rate) with official secto
 
 ---
 
-## 🚀 Quick Start (快速开始)
+## 🚀 Quick Start
 
-### 1. Prerequisites (前置准备)
+### 1. Prerequisites
 - Python 3.10 or higher.
-- F1 Manager 2024 installed (Steam / Epic Games / etc.).
+- F1 Manager 2024 installed (Epic Games Store, Steam, Xbox Game Pass, etc.).
 - [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS/releases) installed in your game's `F1Manager24/Binaries/Win64/` (v3.x standard).
 
-### 2. Installation (安装依赖与模组)
+### 2. Installation
 
 Clone the repository and install Python dependencies:
 ```bash
@@ -53,10 +53,10 @@ Deploy the Live Timing mod to your game with our **One-Click Installer**:
 ```bash
 python install_mod.py
 ```
-> The script auto-detects your Steam library / game path and deploys `LiveTimingMod` into `ue4ss/Mods/`.
+> The script auto-detects your Epic Games, Steam, or Xbox Game Pass library path and deploys `LiveTimingMod` into `ue4ss/Mods/`.
 > *(Alternatively, download the pre-packaged zip from [Releases](../../releases) and drop it into `F1Manager24/Binaries/Win64/`)*.
 
-### 3. Run the Strategy Assistant (启动运行)
+### 3. Run the Strategy Assistant
 
 Launch **F1 Manager 2024**, enter any race session, and run:
 ```bash

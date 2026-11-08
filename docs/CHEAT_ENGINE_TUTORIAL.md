@@ -1,212 +1,129 @@
-# 内存地址搜索教程 — F1 Manager 2024
+# Memory Address Reverse-Engineering Tutorial — F1 Manager 2024
 
-## 📋 前提条件
-1. 安装 Cheat Engine: https://www.cheatengine.org/
-2. 安装 pymem: `pip install pymem`
-3. F1 Manager 2024 正在运行，已进入比赛
-
----
-
-## 🎯 第一步：找到圈数地址
-
-### 1.1 准备
-```
-1. 启动 F1 Manager 2024
-2. 进入一场比赛（不是练习赛或排位赛）
-3. 让比赛跑到第 10 圈左右
-4. 暂停比赛
-```
-
-### 1.2 在 Cheat Engine 中搜索
-```
-1. 打开 Cheat Engine
-2. 点击左上角的电脑图标（选择进程）
-3. 选择 "F1Manager24-Win64-Shipping.exe"
-4. 在 "Value" 框输入当前圈数（如 10）
-5. "Scan Type" 选择 "Exact Value"
-6. "Value Type" 选择 "4 Bytes"
-7. 点击 "First Scan"
-```
-
-### 1.3 过滤结果
-```
-1. 回到游戏，跑 1 圈（变成 11）
-2. 暂停
-3. 回到 Cheat Engine
-4. 在 "Value" 框输入 11
-5. 点击 "Next Scan"
-6. 重复这个过程直到只剩 1-3 个地址
-```
-
-### 1.4 找到指针链
-```
-1. 右键点击找到的地址
-2. 选择 "Find out what accesses this address"
-3. 回到游戏，跑 1 圈
-4. Cheat Engine 会显示访问这个地址的指令
-5. 双击一条指令，查看 "Pointer" 信息
-6. 记录基址和偏移量
-```
-
-### 1.5 记录结果
-```
-示例格式：
-基址: F1Manager24-Win64-Shipping.exe+0x1A0B2C0
-偏移量: [0x20, 0x38, 0x10]
-```
+## 📋 Prerequisites
+1. Cheat Engine: https://www.cheatengine.org/
+2. pymem: `pip install pymem`
+3. F1 Manager 2024 running, inside an active race session
 
 ---
 
-## 🎯 第二步：找到车辆位置地址
+## 🎯 Step 1: Finding Lap Count Address
 
-### 2.1 搜索你的位置
+### 1.1 Preparation
 ```
-1. 记下你当前的位置（如 P5 = 5）
-2. 在 Cheat Engine 搜索 5
-3. 回到游戏，等位置变化（如变成 4）
-4. 搜索 4
-5. 重复直到找到
+1. Launch F1 Manager 2024
+2. Enter an active race session
+3. Advance until around Lap 10
+4. Pause the game
 ```
 
-### 2.2 验证
+### 1.2 Search in Cheat Engine
 ```
-1. 冻结找到的地址（勾选 Freeze）
-2. 回到游戏，看位置是否不变
-3. 如果不变，说明找对了
+1. Open Cheat Engine
+2. Click process selector (top-left computer icon)
+3. Select "F1Manager24-Win64-Shipping.exe" (or F1Manager24.exe)
+4. Enter current lap (e.g. 10) in "Value" box
+5. Set "Scan Type" to "Exact Value"
+6. Set "Value Type" to "4 Bytes"
+7. Click "First Scan"
+```
+
+### 1.3 Filter Results
+```
+1. Return to game, simulate 1 lap (lap becomes 11)
+2. Pause the game
+3. Return to Cheat Engine
+4. Enter 11 in "Value" box
+5. Click "Next Scan"
+6. Repeat until 1-3 candidate addresses remain
+```
+
+### 1.4 Finding Pointer Chains
+```
+1. Right-click target address
+2. Select "Find out what accesses this address"
+3. Return to game, simulate 1 lap
+4. Cheat Engine displays accessing instructions
+5. Double-click instruction, inspect "Pointer" info
+6. Note base address and offsets
+```
+
+### 1.5 Example Record
+```
+Base: F1Manager24-Win64-Shipping.exe+0x1A0B2C0
+Offsets: [0x20, 0x38, 0x10]
 ```
 
 ---
 
-## 🎯 第三步：找到轮胎状态地址
+## 🎯 Step 2: Finding Car Position
 
-### 3.1 搜索轮胎百分比
+### 2.1 Search Position
 ```
-1. 记下轮胎状态（如 65%）
-2. 在 Cheat Engine:
+1. Note current race position (e.g. P5 = 5)
+2. Search value 5 in Cheat Engine (4 Bytes)
+3. Wait for position to change (e.g. P4)
+4. Next scan: 4
+5. Repeat until isolated
+```
+
+### 2.2 Validation
+```
+1. Freeze the found address
+2. Return to game and observe if position indicator freezes
+3. If confirmed, unfreeze and document pointer
+```
+
+---
+
+## 🎯 Step 3: Finding Tyre Condition
+
+### 3.1 Search Tyre Percentage
+```
+1. Note tyre condition percentage (e.g. 65%)
+2. In Cheat Engine:
    - Scan Type: "Value between..."
    - Min: 0.63
    - Max: 0.67
    - Value Type: Float
-3. 点击 First Scan
-4. 等轮胎变化（如变成 63%）
-5. 搜索 0.61-0.65
-6. 重复直到找到
+3. Click First Scan
+4. Wait for tyre wear change (e.g. 63%)
+5. Next scan: 0.61 - 0.65
+6. Repeat until found
 ```
 
-### 3.2 注意事项
+### 3.2 Key Notes
 ```
-- 轮胎是浮点数（Float），不是整数
-- 游戏显示 65%，内存里是 0.65
-- 搜索时用小数，不是百分比
-```
-
----
-
-## 🎯 第四步：找到 ERS 和燃油
-
-### 4.1 ERS 电量
-```
-1. 记下 ERS 百分比（如 75%）
-2. 搜索 0.73-0.77 (Float)
-3. 等 ERS 变化
-4. 重复
-```
-
-### 4.2 燃油
-```
-1. 记下剩余燃油（如 45.2 kg）
-2. 搜索 44.9-45.5 (Float)
-3. 等燃油变化
-4. 重复
+- Tyre wear is stored as a 4-byte Float, not an integer
+- 65% in UI equals 0.65 in memory
+- Use decimals rather than percentages during searches
 ```
 
 ---
 
-## 🎯 第五步：验证和保存
+## 🎯 Step 4: Finding ERS and Fuel
 
-### 5.1 验证所有地址
+### 4.1 ERS State of Charge
 ```
-1. 所有地址都找到后
-2. 冻结所有地址
-3. 回到游戏
-4. 验证数据是否正确
-```
-
-### 5.2 保存到配置文件
-```
-1. 记录所有地址
-2. 运行: python find_addresses.py
-3. 输入找到的地址
-4. 自动生成 config/memory_offsets.yaml
+1. Note ERS percentage (e.g. 75%)
+2. Search 0.73 - 0.77 (Float)
+3. Wait for battery deploy / recharge
+4. Filter until confirmed
 ```
 
----
-
-## ⚠️ 常见问题
-
-### Q: 搜索不到值？
-A: 可能原因:
-- 值已经被加密（XOR 等）
-- 值存储为不同的类型
-- 搜索范围太小
-
-### Q: 找到多个地址？
-A: 继续过滤:
-- 跑更多圈
-- 等值变化更大
-- 用 "Unknown initial value" 搜索
-
-### Q: 指针链不稳定？
-A: 可能原因:
-- 找到的不是真正的指针链
-- 需要更深的指针链
-- 游戏更新改变了结构
-
-### Q: 地址下次启动就变了？
-A: 这是正常的（ASLR）
-- 指针链是相对的
-- 基址 + 偏移量 = 稳定的访问方式
-- 用 "Find what accesses" 找指针链
-
----
-
-## 🔧 高级技巧
-
-### 使用 Cheat Engine 的指针扫描
+### 4.2 Fuel Remaining
 ```
-1. 找到最终地址
-2. Tools → Pointer scan for this address
-3. 设置 Max Level: 5, Max Offset: 0x1000
-4. 重启游戏
-5. 用新地址验证指针链
-```
-
-### 使用 AOB 扫描（更稳定）
-```
-1. 在找到的地址附近看字节序列
-2. 记录独特的字节模式
-3. 用 AOB 扫描找到相同模式
-4. 这种方式更稳定，不怕游戏更新
+1. Note remaining fuel load (e.g. 45.2 kg)
+2. Search 44.9 - 45.5 (Float)
+3. Filter as fuel burns down
 ```
 
 ---
 
-## 📞 需要帮助？
+## ⚠️ Frequently Asked Questions
 
-如果卡住了：
-1. 截图你的 Cheat Engine 界面
-2. 告诉我你搜索的值
-3. 我帮你分析
+### Q: Why do memory addresses change between launches?
+A: This is due to ASLR (Address Space Layout Randomization). Use static module base offsets (`module + offset`) with pointer chains, or use the UE4SS reflection mod approach which dynamically queries memory offsets via Unreal Engine reflection symbols.
 
----
-
-## ⏱️ 预计时间
-
-| 步骤 | 预计时间 |
-|------|----------|
-| 找圈数地址 | 15-30 分钟 |
-| 找车辆位置 | 30-60 分钟 |
-| 找轮胎状态 | 30-60 分钟 |
-| 找 ERS/燃油 | 30-60 分钟 |
-| 验证和保存 | 15-30 分钟 |
-| **总计** | **2-4 小时** |
+### Q: Why prefer UE4SS over manual Cheat Engine offsets?
+A: Manual offsets break with every official game update and require maintaining 20 separate pointer chains. UE4SS hooks directly into Unreal Engine's C++ reflection system (`FCarData`), ensuring compatibility across game patches.

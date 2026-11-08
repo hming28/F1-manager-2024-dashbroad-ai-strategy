@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-install_mod.py — F1 Manager 2024 Live Timing Mod 一键安装脚本
+install_mod.py — F1 Manager 2024 Live Timing Mod Installer
 
-用于开源分发：自动检测游戏安装路径，并将 LiveTimingMod 安装至 UE4SS Mods 目录。
+Automated installer for open-source users: detects game installation directory
+across Epic Games Store, Steam, and custom drives, and deploys LiveTimingMod
+into the UE4SS Mods directory.
 """
 import os
 import sys
@@ -34,7 +36,7 @@ CANDIDATE_PATHS = [
 ]
 
 def find_epic_game_path() -> Optional[Path]:
-    """尝试从 Epic Games Launcher 的 Manifest 清单文件中精准定位安装目录"""
+    """Attempt to locate game installation via Epic Games Launcher manifest items."""
     import json
     program_data = os.environ.get("ProgramData", r"C:\ProgramData")
     manifests_dir = Path(program_data) / "Epic" / "EpicGamesLauncher" / "Data" / "Manifests"
@@ -53,7 +55,7 @@ def find_epic_game_path() -> Optional[Path]:
     return None
 
 def find_steam_game_path() -> Optional[Path]:
-    """尝试从 Steam 注册表和库文件中定位游戏安装目录"""
+    """Attempt to locate game installation via Steam registry and library folders."""
     try:
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam")
         steam_path, _ = winreg.QueryValueEx(key, "SteamPath")
@@ -64,7 +66,6 @@ def find_steam_game_path() -> Optional[Path]:
         if vdf_file.exists():
             with open(vdf_file, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-            # 简单解析 vdf 中的 "path" 字段
             import re
             for match in re.finditer(r'"path"\s+"([^"]+)"', content):
                 lib_path = Path(match.group(1).replace(r"\\", "\\"))
@@ -76,26 +77,26 @@ def find_steam_game_path() -> Optional[Path]:
     return None
 
 def find_game_root(user_input: Optional[str] = None) -> Optional[Path]:
-    """定位游戏根目录 (支持 Epic Games、Steam 及自定义路径)"""
+    """Locate the root game directory (supporting Epic Games, Steam, and custom paths)."""
     if user_input:
         p = Path(user_input).resolve()
         if p.exists():
             return p
-        print(f"[!] 指定的路径不存在: {user_input}")
+        print(f"[!] Specified path does not exist: {user_input}")
 
-    # 1. 优先检查 Epic Games 清单 (精准匹配)
+    # 1. Check Epic Games manifest
     epic_dir = find_epic_game_path()
     if epic_dir and epic_dir.exists():
-        print(f"[+] 自动检测到 Epic Games 版本: {epic_dir}")
+        print(f"[+] Detected Epic Games installation: {epic_dir}")
         return epic_dir
 
-    # 2. 检查注册表 Steam 库
+    # 2. Check Steam registry and libraries
     steam_dir = find_steam_game_path()
     if steam_dir and steam_dir.exists():
-        print(f"[+] 自动检测到 Steam 版本: {steam_dir}")
+        print(f"[+] Detected Steam installation: {steam_dir}")
         return steam_dir
 
-    # 3. 检查常见预设路径
+    # 3. Check preset common paths
     for path_str in CANDIDATE_PATHS:
         p = Path(path_str)
         if p.exists() and (p / "F1Manager24" / "Binaries" / "Win64").exists():
@@ -105,32 +106,32 @@ def find_game_root(user_input: Optional[str] = None) -> Optional[Path]:
 
 def install():
     parser = argparse.ArgumentParser(description="F1 Manager 2024 Live Timing Mod Installer")
-    parser.add_argument("--game-dir", "-g", help="游戏安装根目录 (例如: D:\\Games\\F1Manager2024)")
+    parser.add_argument("--game-dir", "-g", help="Game installation root directory (e.g. D:\\Games\\F1Manager2024)")
     args = parser.parse_args()
 
     repo_dir = Path(__file__).resolve().parent
     mod_source = repo_dir / "mods" / "LiveTimingMod"
 
     if not mod_source.exists():
-        print(f"[-] 错误: 未在仓库中找到模组源码: {mod_source}")
+        print(f"[-] Error: Mod source directory not found in repository: {mod_source}")
         sys.exit(1)
 
     print("=" * 60)
-    print(" F1 Manager 2024 Live Timing Mod 一键安装工具")
+    print(" F1 Manager 2024 Live Timing Mod Installer")
     print("=" * 60)
 
     game_root = find_game_root(args.game_dir)
     if not game_root:
-        print("[?] 未能自动找到游戏安装目录。")
-        val = input("请输入您的 F1 Manager 2024 游戏根目录路径: ").strip()
+        print("[?] Could not automatically locate the game directory.")
+        val = input("Please enter your F1 Manager 2024 game root directory path: ").strip()
         if val:
             game_root = Path(val).resolve()
 
     if not game_root or not game_root.exists():
-        print("[-] 无法继续：无效的游戏根目录。")
+        print("[-] Cannot proceed: Invalid game root directory.")
         sys.exit(1)
 
-    # 兼容传入 Win64 目录或游戏根目录
+    # Normalize to Win64 binaries directory
     if (game_root / "Binaries" / "Win64").exists():
         win64_dir = game_root / "Binaries" / "Win64"
     elif (game_root / "F1Manager24" / "Binaries" / "Win64").exists():
@@ -138,44 +139,44 @@ def install():
     elif game_root.name.lower() == "win64":
         win64_dir = game_root
     else:
-        print(f"[-] 目录结构不匹配，未找到 F1Manager24/Binaries/Win64: {game_root}")
+        print(f"[-] Directory structure mismatch, missing F1Manager24/Binaries/Win64: {game_root}")
         sys.exit(1)
 
-    print(f"[+] 找到游戏二进制目录: {win64_dir}")
+    print(f"[+] Found game binaries directory: {win64_dir}")
 
     ue4ss_dir = win64_dir / "ue4ss"
     ue4ss_mods_dir = ue4ss_dir / "Mods"
     ue4ss_dll = win64_dir / "UE4SS.dll"
 
-    # 检查 UE4SS 是否存在
+    # Check if UE4SS is installed
     if not ue4ss_mods_dir.exists() and not ue4ss_dll.exists():
-        print("\n[!] 检测到游戏尚未安装 UE4SS 运行时框架！")
-        print("    Live Timing 依赖 UE4SS 来安全读取游戏内存。")
-        print("    安装步骤极简：")
-        print("    1. 前往 GitHub 下载 UE4SS: https://github.com/UE4SS-RE/RE-UE4SS/releases")
-        print("       (推荐下载 UE4SS_v3.x.x.zip 或 UE4SS_Xinput.zip)")
-        print(f"    2. 将压缩包解压直接放入: {win64_dir}")
-        print("    3. 重新运行本脚本即可！\n")
+        print("\n[!] UE4SS framework not detected in game directory!")
+        print("    Live Timing requires UE4SS to safely extract telemetry.")
+        print("    Quick setup:")
+        print("    1. Download UE4SS from GitHub: https://github.com/UE4SS-RE/RE-UE4SS/releases")
+        print("       (Download UE4SS_v3.x.x.zip or UE4SS_Xinput.zip)")
+        print(f"    2. Extract contents directly into: {win64_dir}")
+        print("    3. Re-run this installer script!\n")
         sys.exit(1)
 
     ue4ss_mods_dir.mkdir(parents=True, exist_ok=True)
     target_mod_dir = ue4ss_mods_dir / "LiveTimingMod"
 
-    print(f"[+] 正在将模组部署至: {target_mod_dir}")
+    print(f"[+] Deploying mod to: {target_mod_dir}")
     shutil.copytree(mod_source, target_mod_dir, dirs_exist_ok=True)
 
-    # 确保 enabled.txt 存在
+    # Ensure enabled.txt exists
     enabled_flag = target_mod_dir / "enabled.txt"
     if not enabled_flag.exists():
         enabled_flag.touch()
 
     print("\n" + "=" * 60)
-    print(" [√] Live Timing 模组安装成功！")
+    print(" [√] Live Timing Mod installed successfully!")
     print("=" * 60)
-    print("使用步骤：")
-    print(" 1. 启动 F1 Manager 2024 游戏并进入比赛 (Practice / Qualifying / Race)")
-    print(" 2. 在本项目终端运行: python main.py")
-    print(" 3. 即可在终端实时看到 F1 官方电视转播级实时计时塔 (Live Timing Tower)！")
+    print("How to use:")
+    print(" 1. Launch F1 Manager 2024 and enter any session (Practice / Qualifying / Race)")
+    print(" 2. In your terminal run: python main.py")
+    print(" 3. Watch real-time broadcast-grade F1 Timing Tower telemetry live!")
     print("=" * 60)
 
 if __name__ == "__main__":

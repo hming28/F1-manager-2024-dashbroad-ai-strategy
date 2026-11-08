@@ -189,27 +189,27 @@ def make_tyre_warning(lap: int, condition: float, remaining: int) -> Notificatio
     if condition < 0.20:
         return Notification(
             Priority.CRITICAL, "TYRE",
-            f"🛞 轮胎即将报废！({condition:.0%})",
-            f"剩余约 {remaining} 圈",
-            "立刻进站！",
+            f"🛞 Tyre Puncture Risk! ({condition:.0%})",
+            f"Est. {remaining} laps remaining",
+            "BOX NOW!",
             sound="alarm",
             lap=lap,
         )
     elif condition < 0.35:
         return Notification(
             Priority.URGENT, "TYRE",
-            f"🛞 轮胎严重衰退 ({condition:.0%})",
-            f"剩余约 {remaining} 圈",
-            "建议 2 圈内进站",
+            f"🛞 Severe Tyre Degradation ({condition:.0%})",
+            f"Est. {remaining} laps remaining",
+            "Box within 2 laps",
             sound="alert",
             lap=lap,
         )
     elif condition < 0.50:
         return Notification(
             Priority.WARNING, "TYRE",
-            f"🛞 轮胎中度磨损 ({condition:.0%})",
-            f"剩余约 {remaining} 圈",
-            "开始考虑进站窗口",
+            f"🛞 Moderate Tyre Wear ({condition:.0%})",
+            f"Est. {remaining} laps remaining",
+            "Prepare pit window",
             lap=lap,
         )
     return None
@@ -220,27 +220,27 @@ def make_weather_alert(lap: int, rain: float, water: float,
     if rain > 0.50:
         return Notification(
             Priority.CRITICAL, "WEATHER",
-            "🌧️ 大雨来袭！",
-            f"雨量 {rain:.0%}，赛道积水 {water:.0%}",
-            f"立刻换 {compound} 胎！",
+            "🌧️ Heavy Rain Incoming!",
+            f"Rain {rain:.0%}, Track wetness {water:.0%}",
+            f"Box for {compound} tyres now!",
             sound="alarm",
             lap=lap,
         )
     elif rain > 0.15:
         return Notification(
             Priority.URGENT, "WEATHER",
-            "🌦️ 开始下雨",
-            f"雨量 {rain:.0%}，积水 {water:.0%}",
-            f"准备换 {compound} 胎",
+            "🌦️ Rain Starting",
+            f"Rain {rain:.0%}, Track wetness {water:.0%}",
+            f"Prepare for {compound} tyres",
             sound="alert",
             lap=lap,
         )
     elif rain > 0.05:
         return Notification(
             Priority.NOTICE, "WEATHER",
-            "☁️ 零星小雨",
-            f"雨量 {rain:.0%}",
-            "监控天气变化",
+            "☁️ Light Drizzle",
+            f"Rain intensity {rain:.0%}",
+            "Monitor weather radar",
             lap=lap,
         )
     return None
@@ -251,18 +251,18 @@ def make_safety_car_alert(lap: int, time_saved: float,
     if should_pit:
         return Notification(
             Priority.CRITICAL, "SAFETY_CAR",
-            "🚨 安全车 — 免费进站机会！",
-            f"可节省 {time_saved:.1f} 秒",
-            "立刻进站换胎！",
+            "🚨 Safety Car — Free Pit Window!",
+            f"Saves ~{time_saved:.1f}s pit delta",
+            "Box this lap for cheap stop!",
             sound="alarm",
             lap=lap,
         )
     else:
         return Notification(
             Priority.URGENT, "SAFETY_CAR",
-            "🟡 安全车出动",
-            f"维修区损失仅 {time_saved:.1f}s",
-            "评估是否进站",
+            "🟡 Safety Car Deployed",
+            f"Pit loss reduced to {time_saved:.1f}s",
+            "Evaluate pit stop opportunity",
             sound="alert",
             lap=lap,
         )
@@ -273,18 +273,18 @@ def make_pit_window(lap: int, target_lap: int, compound: str,
     if gain_ms > 3000:
         return Notification(
             Priority.URGENT, "PIT",
-            f"📦 最佳进站窗口：第 {target_lap} 圈",
-            f"换 {compound} 胎，预计收益 +{gain_ms/1000:.1f}s",
-            f"第 {target_lap} 圈进站",
+            f"📦 Optimal Pit Window: Lap {target_lap}",
+            f"Fit {compound}, estimated gain +{gain_ms/1000:.1f}s",
+            f"Box lap {target_lap}",
             sound="alert",
             lap=lap,
         )
     elif gain_ms > 1000:
         return Notification(
             Priority.WARNING, "PIT",
-            f"📦 进站窗口打开：第 {target_lap} 圈",
-            f"换 {compound} 胎，收益 +{gain_ms/1000:.1f}s",
-            "可选择进站",
+            f"📦 Pit Window Open: Lap {target_lap}",
+            f"Fit {compound}, estimated gain +{gain_ms/1000:.1f}s",
+            "Pit stop available",
             lap=lap,
         )
     return None
@@ -294,9 +294,9 @@ def make_undercut_alert(lap: int, target_pos: int, gap: float,
                         target_lap: int) -> Notification:
     return Notification(
         Priority.WARNING, "INTEL",
-        f"⚡ Undercut 机会：P{target_pos}",
-        f"差距 {gap:.1f}s，对手轮胎更好",
-        f"第 {target_lap} 圈进站可反超",
+        f"⚡ Undercut Opportunity: P{target_pos}",
+        f"Gap {gap:.1f}s, rival tyre delta advantage",
+        f"Box lap {target_lap} to undercut",
         sound="beep",
         lap=lap,
     )
@@ -306,17 +306,17 @@ def make_ers_alert(lap: int, charge: float) -> Optional[Notification]:
     if charge > 0.90:
         return Notification(
             Priority.NOTICE, "ERS",
-            "⚡ ERS 满电",
-            f"电量 {charge:.0%}",
-            "可以全功率超车",
+            "⚡ ERS Battery Full",
+            f"Charge {charge:.0%}",
+            "Deploy overtake mode",
             lap=lap,
         )
     elif charge < 0.15:
         return Notification(
             Priority.WARNING, "ERS",
-            "🔋 ERS 电量低",
-            f"电量 {charge:.0%}",
-            "切换回收模式",
+            "🔋 ERS Battery Low",
+            f"Charge {charge:.0%}",
+            "Switch to harvest mode",
             lap=lap,
         )
     return None
@@ -326,18 +326,18 @@ def make_damage_alert(lap: int, severity: int, parts: str) -> Notification:
     if severity > 10:
         return Notification(
             Priority.URGENT, "DAMAGE",
-            f"🔧 严重损伤 ({severity}/18)",
+            f"🔧 Critical Damage ({severity}/18)",
             parts,
-            "考虑进站维修",
+            "Consider pitting for repairs",
             sound="alert",
             lap=lap,
         )
     elif severity > 5:
         return Notification(
             Priority.WARNING, "DAMAGE",
-            f"🔧 中度损伤 ({severity}/18)",
+            f"🔧 Moderate Damage ({severity}/18)",
             parts,
-            "监控性能影响",
+            "Monitor pace impact",
             lap=lap,
         )
     return None
